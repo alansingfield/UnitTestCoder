@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnitTestCoder.Core.Coder;
 
 namespace UnitTestCoder.Core.Literal
 {
@@ -11,12 +12,15 @@ namespace UnitTestCoder.Core.Literal
     {
         private readonly IValueLiteralMaker valueLiteralMaker;
         private readonly ITypeNameLiteralMaker typeNameLiteralMaker;
+        private readonly IIndenter indenter;
 
         public ObjectLiteralMaker(IValueLiteralMaker valueLiteralMaker,
-            ITypeNameLiteralMaker typeNameLiteralMaker)
+            ITypeNameLiteralMaker typeNameLiteralMaker,
+            IIndenter indenter)
         {
             this.valueLiteralMaker = valueLiteralMaker;
             this.typeNameLiteralMaker = typeNameLiteralMaker;
+            this.indenter = indenter;
         }
 
         public string MakeObjectLiteral(object arg, int indent = 0)
@@ -25,9 +29,9 @@ namespace UnitTestCoder.Core.Literal
         }
         private IEnumerable<string> objLiteral(object arg, int indent)
         {
-            string space()
+            string space(string text = "")
             {
-                return new string(' ', indent * 4);
+                return indenter.Indent(text, indent);
             }
 
             if(arg == null)

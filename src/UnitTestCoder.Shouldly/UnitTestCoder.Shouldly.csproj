@@ -5,12 +5,13 @@
     <RootNamespace>UnitTestCoder.Shouldly</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\UnitTestCoder.Core\UnitTestCoder.Core.csproj" />
-  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Gen\" />
+    <ProjectReference Include="..\UnitTestCoder.Core\UnitTestCoder.Core.csproj" />
   </ItemGroup>
 
 </Project>

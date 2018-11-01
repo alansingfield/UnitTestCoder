@@ -1,47 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Text;
-using UnitTestCoder.Core.Decomposer;
+using System.Linq;
+using System.Reflection;
 using UnitTestCoder.Core.Literal;
+using UnitTestCoder.Core.Decomposer;
+using UnitTestCoder.Shouldly.Maker;
+using UnitTestCoder.Core.Coder;
 
 namespace UnitTestCoder.Shouldly.Coder
 {
-    public class ShouldlyTestCoder
+    public class ShouldlyTestCoder : IShouldlyTestCoder
     {
+        private readonly IShouldlyTestMaker shouldlyTestMaker;
         private readonly IObjectDecomposer objectDecomposer;
         private readonly IValueLiteralMaker valueLiteralMaker;
+        private readonly IIndenter indenter;
 
         public ShouldlyTestCoder(
+            IShouldlyTestMaker shouldlyTestMaker,
             IObjectDecomposer objectDecomposer,
-            IValueLiteralMaker valueLiteralMaker)
+            IValueLiteralMaker valueLiteralMaker,
+            IIndenter indenter
+        )
         {
+            this.shouldlyTestMaker = shouldlyTestMaker;
             this.objectDecomposer = objectDecomposer;
             this.valueLiteralMaker = valueLiteralMaker;
+            this.indenter = indenter;
         }
 
-        public IEnumerable<string> GenerateShouldBes<T>(string lvalue, T arg, Func<PropertyInfo, bool> nofollow = null)
+        public string Code<T>(T arg,
+            string lvalue,
+            Func<PropertyInfo, bool> nofollow = null)
         {
-            foreach(var block in objectDecomposer.Decompose(lvalue, arg, nofollow))
-            {
-                switch(block.BlockType)
-                {
-                    case BlockTypeEnum.ArrayStart:
-                        yield return $"{block.LValue}.ShouldNotBeNull();";
-                        yield return $"{block.LValue}.Count().ShouldBe({block.Count});";
-                        break;
+            var lines = new List<string>();
+            lines.Add("{");
+            lines.AddRange(shouldlyTestMaker.GenerateShouldBes(lvalue, arg, nofollow));
+            lines.Add("}");
 
-                    case BlockTypeEnum.DictionaryStart:
-                        yield return $"{block.LValue}.ShouldNotBeNull();";
-                        yield return $"{block.LValue}.Count().ShouldBe({block.Count});";
-                        break;
+            string text = String.Join("\r\n",
+                lines.Select(x => indenter.Indent(x, 0)));
 
-                    case BlockTypeEnum.Literal:
-                    case BlockTypeEnum.Reference:
-                        yield return $"{block.LValue}.ShouldBe({block.RValue});";
-                        break;
-                }
-            }
+            return (text + "\r\n");
         }
     }
 }
