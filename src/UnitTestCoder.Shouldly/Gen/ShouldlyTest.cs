@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using UnitTestCoder.Core.Coder;
@@ -37,8 +36,8 @@ namespace UnitTestCoder.Shouldly.Gen
 
             string text = coder.Code(arg, lvalue, nofollow);
 
-            // Writing the text to Debug causes it to show in the MSTest output window.
-            Debug.WriteLine(text);
+            // Writing the text to console causes it to show in the MSTest output window.
+            Console.WriteLine(text);
         }
     }
 }
