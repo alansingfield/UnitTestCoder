@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>UnitTestCoder.Shouldly</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UnitTestCoder.Core\UnitTestCoder.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Gen\" />
+  </ItemGroup>
+
+</Project>
