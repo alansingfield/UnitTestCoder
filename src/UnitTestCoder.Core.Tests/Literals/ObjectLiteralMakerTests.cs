@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using UnitTestCoder.Core.Coder;
+using UnitTestCoder.Core.Formatting;
 using UnitTestCoder.Core.Literal;
 
 namespace UnitTestCoder.Core.Tests.Literals

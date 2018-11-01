@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UnitTestCoder.Core.Coder;
+using UnitTestCoder.Core.Formatting;
 
 namespace UnitTestCoder.Core.Literal
 {
@@ -23,15 +23,16 @@ namespace UnitTestCoder.Core.Literal
             this.indenter = indenter;
         }
 
-        public string MakeObjectLiteral(object arg, int indent = 0)
+        public string MakeObjectLiteral(object arg)
         {
-            return String.Join("", objLiteral(arg, indent));
+            return String.Join("", objLiteral(arg, nesting: 0));
         }
-        private IEnumerable<string> objLiteral(object arg, int indent)
+
+        private IEnumerable<string> objLiteral(object arg, int nesting)
         {
             string space(string text = "")
             {
-                return indenter.Indent(text, indent);
+                return indenter.Indent(text, nesting);
             }
 
             if(arg == null)
@@ -57,7 +58,7 @@ namespace UnitTestCoder.Core.Literal
 
                     yield return space();
                     yield return "{\r\n";
-                    indent++;
+                    nesting++;
 
 
                     // Iterate through enumerables
@@ -65,7 +66,7 @@ namespace UnitTestCoder.Core.Literal
                     {
                         yield return space();
 
-                        foreach(var result in objLiteral(item, indent))
+                        foreach(var result in objLiteral(item, nesting))
                         {
                             yield return result;
                         }
@@ -73,7 +74,7 @@ namespace UnitTestCoder.Core.Literal
                         yield return ",\r\n";
                     }
 
-                    indent--;
+                    nesting--;
                     yield return space();
                     yield return "}";
                 }
@@ -85,7 +86,7 @@ namespace UnitTestCoder.Core.Literal
 
                     yield return space();
                     yield return "{\r\n";
-                    indent++;
+                    nesting++;
 
                     // Iterate through properties
                     foreach(var prop in props)
@@ -97,14 +98,14 @@ namespace UnitTestCoder.Core.Literal
 
                         yield return $"{prop.Key} = ";
 
-                        foreach(var result in objLiteral(val, indent))
+                        foreach(var result in objLiteral(val, nesting))
                         {
                             yield return result;
                         }
                         yield return ",\r\n";
                     }
 
-                    indent--; 
+                    nesting--; 
                     yield return space();
                     yield return "}";
                 }

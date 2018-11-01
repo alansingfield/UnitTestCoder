@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace UnitTestCoder.Core.Coder
+namespace UnitTestCoder.Core.Formatting
 {
     public class Indenter : IIndenter
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-using UnitTestCoder.Core.Coder;
+using UnitTestCoder.Core.Formatting;
 using UnitTestCoder.Core.Decomposer;
 using UnitTestCoder.Core.Literal;
 using UnitTestCoder.Shouldly.Coder;

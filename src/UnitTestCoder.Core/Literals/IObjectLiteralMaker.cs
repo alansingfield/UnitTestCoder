@@ -4,6 +4,6 @@ namespace UnitTestCoder.Core.Literal
 {
     public interface IObjectLiteralMaker
     {
-        string MakeObjectLiteral(object arg, int indent = 0);
+        string MakeObjectLiteral(object arg);
     }
 }

@@ -6,7 +6,7 @@ using System.Reflection;
 using UnitTestCoder.Core.Literal;
 using UnitTestCoder.Core.Decomposer;
 using UnitTestCoder.Shouldly.Maker;
-using UnitTestCoder.Core.Coder;
+using UnitTestCoder.Core.Formatting;
 
 namespace UnitTestCoder.Shouldly.Coder
 {

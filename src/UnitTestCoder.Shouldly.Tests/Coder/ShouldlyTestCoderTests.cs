@@ -9,7 +9,7 @@ using UnitTestCoder.Shouldly.Maker;
 using NSubstitute;
 using System.Reflection;
 using Shouldly;
-using UnitTestCoder.Core.Coder;
+using UnitTestCoder.Core.Formatting;
 
 namespace UnitTestCoder.Shouldly.Tests.Coder
 {
