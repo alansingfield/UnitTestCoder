@@ -81,7 +81,6 @@ public class MyItem
 }
 
 private MyItem create(int n) => new MyItem() { Number = n, Text = n.ToString() };
-private MyItem process(MyItem x) => new MyItem() { Number = x.Number + 1, Text = x.Text + "X" };
 
 [TestMethod]
 public void ObjectLiteralExample1()
