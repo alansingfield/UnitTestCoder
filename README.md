@@ -39,11 +39,9 @@ public void Test1()
     };
     
     //UnitTestCoder.Gen(result, nameof(result));  
-    
-    {
-        result.X.ShouldBe(3);
-        result.Y.ShouldBe("Hello World");
-    }
+
+    result.X.ShouldBe(3);
+    result.Y.ShouldBe("Hello World");
 }
 ```
 
