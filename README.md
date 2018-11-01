@@ -67,3 +67,59 @@ Voila, you have a passing unit test with 100% coverage!
 
 Obviously with two fields this is not worth the effort, but consider what happens if you have 40 fields or a complex, nested object model. UnitTestCoder will recursively scan your full object tree and generate test lines for every value.
 
+## Object snapshot
+
+UnitTestCoder will write the C# code required to instantiate an object, based on its runtime value when running the test.
+
+This is particularly useful for where you want to pass the output of one test to the input of another. 
+
+``` c#
+public class MyItem
+{
+    public int Number { get; set; }
+    public string Text { get; set; }
+}
+
+private MyItem create(int n) => new MyItem() { Number = n, Text = n.ToString() };
+private MyItem process(MyItem x) => new MyItem() { Number = x.Number + 1, Text = x.Text + "X" };
+
+[TestMethod]
+public void ObjectLiteralExample1()
+{
+    var item = create(20);
+
+    ObjectLiteral.Gen(item, nameof(item));
+}
+```
+
+![ObjectLiteralExample1](https://raw.githubusercontent.com/alansingfield/UnitTestCoder/master/img/ObjectLiteralExample1.png)
+![ObjectLiteralExample2](https://raw.githubusercontent.com/alansingfield/UnitTestCoder/master/img/ObjectLiteralExample2.png)
+
+
+Now we can take the output from the first test and hard-code it into the second test.
+
+``` c#
+private MyItem process(MyItem x) => new MyItem() { Number = x.Number + 1, Text = x.Text + "X" };
+
+[TestMethod]
+public void ObjectLiteralExample2()
+{
+    var item = new MyItem()
+    {
+        Number = 20,
+        Text = "20",
+    };
+
+    var result = process(item);
+
+    ShouldlyTest.Gen(result, nameof(result));
+
+    {
+        result.Number.ShouldBe(21);
+        result.Text.ShouldBe("20X");
+    }
+}
+
+```
+
+The tests are now isolated, you can change the create() method tested in Example1 and it won't cause Example2 to fail.
