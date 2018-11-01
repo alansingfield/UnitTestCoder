@@ -13,7 +13,7 @@ This module:
 - It is far quicker to read/review a list of assertions than write them.
 - By snapshotting the data from one test as the input to the next, you keep your tests independent.
 
-## Shouldly test generation
+## Generating a Shouldly test
 
 Create a test like this:
 
@@ -33,6 +33,8 @@ public void ReadmeExample()
 
 Run the test, then copy the text from the Output window:
 
+![ReadmeExample1.1](https://raw.githubusercontent.com/alansingfield/UnitTestCoder/master/img/ReadmeExample1.1.png)
+![ReadmeExample1.2](https://raw.githubusercontent.com/alansingfield/UnitTestCoder/master/img/ReadmeExample1.2.png)
 ``` C#
 {
     result.X.ShouldBe(3);
