@@ -1,47 +1,63 @@
 # UnitTestCoder
-Automatic generation of C# code for unit tests
+Automatic generation of C# code for unit tests. Uses the excellent [Shouldly](https://github.com/shouldly/shouldly) library.
 
 ## What is it?
 
-This module writes Shouldly unit tests for you.
+This module:
+- Writes C# code for Shouldly tests by reading your test output
+- Snapshots your test output into a C# literal, creating "canned" data for input into your next test.
+
+## Why use UnitTestCoder?
+
+- You can achieve 100% test coverage as it automatically tests every property of your object.
+- It is far quicker to read/review a list of assertions than write them.
+- By snapshotting the data from one test as the input to the next, you keep your tests independent.
+
+## Shouldly test generation
 
 Create a test like this:
 
 ``` C#
 [TestMethod]
-public void Test1()
+public void ReadmeExample()
 {
-    var result = new {
+    var result = new
+    {
         X = 1 + 2,
         Y = "Hello " + "World"
     };
-    
-    UnitTestCoder.Gen(result, nameof(result));   
+
+    ShouldlyTest.Gen(result, nameof(result));
 }
 ```
 
 Run the test, then copy the text from the Output window:
 
 ``` C#
-result.X.ShouldBe(3);
-result.Y.ShouldBe("Hello World");
+{
+    result.X.ShouldBe(3);
+    result.Y.ShouldBe("Hello World");
+}
 ```
 
-Paste this back into your unit test, and comment out the UnitTestCoder call:
+Paste this back into your unit test, and comment out the ShouldlyTest.Gen call:
 
 ``` C#
 [TestMethod]
-public void Test1()
+public void ReadmeExample()
 {
-    var result = new {
+    var result = new
+    {
         X = 1 + 2,
         Y = "Hello " + "World"
     };
-    
-    //UnitTestCoder.Gen(result, nameof(result));  
 
-    result.X.ShouldBe(3);
-    result.Y.ShouldBe("Hello World");
+    // ShouldlyTest.Gen(result, nameof(result));
+
+    {
+        result.X.ShouldBe(3);
+        result.Y.ShouldBe("Hello World");
+    }
 }
 ```
 
