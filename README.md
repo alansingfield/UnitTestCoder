@@ -1,6 +1,11 @@
 # UnitTestCoder
 Automatic generation of C# code for unit tests. Uses the excellent [Shouldly](https://github.com/shouldly/shouldly) library.
 
+[![Build status](https://didsburysoftware.visualstudio.com/UnitTestCoder/_apis/build/status/UnitTestCoder-ci)](https://didsburysoftware.visualstudio.com/UnitTestCoder/_build/latest?definitionId=10)
+
+https://www.nuget.org/packages/UnitTestCoder.Shouldly/
+
+
 ## What is it?
 
 This module:
