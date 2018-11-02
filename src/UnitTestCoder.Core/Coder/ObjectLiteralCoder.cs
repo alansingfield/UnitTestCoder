@@ -9,19 +9,13 @@ namespace UnitTestCoder.Core.Coder
     public class ObjectLiteralCoder : IObjectLiteralCoder
     {
         private readonly IObjectLiteralMaker objectLiteralMaker;
-        private readonly IValueLiteralMaker valueLiteralMaker;
-        private readonly ITypeNameLiteralMaker typeNameLiteralMaker;
         private readonly IIndenter indenter;
 
         public ObjectLiteralCoder(
             IObjectLiteralMaker objectLiteralMaker,
-            IValueLiteralMaker valueLiteralMaker,
-            ITypeNameLiteralMaker typeNameLiteralMaker,
             IIndenter indenter)
         {
             this.objectLiteralMaker = objectLiteralMaker;
-            this.valueLiteralMaker = valueLiteralMaker;
-            this.typeNameLiteralMaker = typeNameLiteralMaker;
             this.indenter = indenter;
         }
 

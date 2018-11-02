@@ -22,8 +22,6 @@ namespace UnitTestCoder.Core.Gen
 
             var objectLiteralCoder = new ObjectLiteralCoder(
                 objectLiteralMaker,
-                valueLiteralMaker,
-                typeNameLiteralMaker,
                 indenter);
 
             string text = objectLiteralCoder.Code(arg, lvalue);
