@@ -8,6 +8,8 @@
     <Copyright>(C) 2018 Didsbury Software Ltd</Copyright>
     <PackageLicenseUrl>https://raw.githubusercontent.com/alansingfield/UnitTestCoder/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/alansingfield/UnitTestCoder</PackageProjectUrl>
+    <Description>Automatic generation of C# object literal initialiser, based on runtime data. Reads the object at runtime and writes the equivalent C# to recreate that object in code. Useful for snapshotting the output of one unit test for input to the next.</Description>
+    <PackageTags>Unit Test, C#, TDD, AAA, Static initialisation, Snapshot</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
