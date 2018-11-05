@@ -2,9 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnitTestCoder.Core.Formatting;
+using UnitTestCoder.Core.Collections;
+using UnitTestCoder.Core.Decomposer;
 
 namespace UnitTestCoder.Core.Literal
 {
@@ -14,7 +17,8 @@ namespace UnitTestCoder.Core.Literal
         private readonly ITypeNameLiteralMaker typeNameLiteralMaker;
         private readonly IIndenter indenter;
 
-        public ObjectLiteralMaker(IValueLiteralMaker valueLiteralMaker,
+        public ObjectLiteralMaker(
+            IValueLiteralMaker valueLiteralMaker,
             ITypeNameLiteralMaker typeNameLiteralMaker,
             IIndenter indenter)
         {
@@ -23,12 +27,14 @@ namespace UnitTestCoder.Core.Literal
             this.indenter = indenter;
         }
 
-        public string MakeObjectLiteral(object arg)
+        public string MakeObjectLiteral(object arg, Func<PropertyInfo, bool> noFollowFunc = null)
         {
-            return String.Join("", objLiteral(arg, nesting: 0));
+            HashSet<object> seenObjects = new HashSet<object>();
+
+            return String.Join("", objLiteral(arg, 0, noFollowFunc, seenObjects));
         }
 
-        private IEnumerable<string> objLiteral(object arg, int nesting)
+        private IEnumerable<string> objLiteral(object arg, int nesting, Func<PropertyInfo, bool> noFollowFunc, HashSet<object> seenObjects)
         {
             string space(string text = "")
             {
@@ -48,66 +54,82 @@ namespace UnitTestCoder.Core.Literal
                 {
                     yield return literal(arg);
                 }
-                else if(typeof(IEnumerable).IsAssignableFrom(type))
-                {
-                    var list = ((IEnumerable)arg).Cast<object>().ToList();
-
-                    string brackets = type.IsArray ? "" : "()";
-
-                    yield return $"new {typename}{brackets}" + "\r\n";
-
-                    yield return space();
-                    yield return "{\r\n";
-                    nesting++;
-
-
-                    // Iterate through enumerables
-                    foreach(object item in list)
-                    {
-                        yield return space();
-
-                        foreach(var result in objLiteral(item, nesting))
-                        {
-                            yield return result;
-                        }
-
-                        yield return ",\r\n";
-                    }
-
-                    nesting--;
-                    yield return space();
-                    yield return "}";
-                }
                 else
                 {
-                    var props = type.GetProperties().ToDictionary(propertyInfo => propertyInfo.Name);
+                    // Check for circular reference
+                    if(seenObjects.Contains(arg))
+                        throw new Exception($"Circular reference detected for object of type '{typename}'");
 
-                    yield return $"new {typename}()\r\n";
+                    seenObjects.Add(arg);
 
-                    yield return space();
-                    yield return "{\r\n";
-                    nesting++;
-
-                    // Iterate through properties
-                    foreach(var prop in props)
+                    if(typeof(IEnumerable).IsAssignableFrom(type))
                     {
-                        var getMethod = prop.Value.GetGetMethod();
-                        object val = getMethod.Invoke(arg, null);
+                        var list = ((IEnumerable)arg).Cast<object>().ToList();
+
+                        string brackets = type.IsArray ? "" : "()";
+
+                        yield return $"new {typename}{brackets}" + "\r\n";
 
                         yield return space();
+                        yield return "{\r\n";
+                        nesting++;
 
-                        yield return $"{prop.Key} = ";
-
-                        foreach(var result in objLiteral(val, nesting))
+                        // Iterate through enumerables
+                        foreach(object item in list)
                         {
-                            yield return result;
-                        }
-                        yield return ",\r\n";
-                    }
+                            yield return space();
 
-                    nesting--; 
-                    yield return space();
-                    yield return "}";
+                            foreach(var result in objLiteral(item, nesting, noFollowFunc, seenObjects))
+                            {
+                                yield return result;
+                            }
+
+                            yield return ",\r\n";
+                        }
+
+                        nesting--;
+                        yield return space();
+                        yield return "}";
+                    }
+                    else
+                    {
+                        var props = type.GetProperties().ToDictionary(propertyInfo => propertyInfo.Name);
+
+                        yield return $"new {typename}()\r\n";
+
+                        yield return space();
+                        yield return "{\r\n";
+                        nesting++;
+
+                        // Iterate through properties
+                        foreach(var (name, prop) in props)
+                        {
+                            // Check the nofollow() function
+                            bool nofollow = (noFollowFunc?.Invoke(prop)) ?? false;
+
+                            // Property must be writeable.
+                            if(prop.CanWrite && !nofollow)
+                            {
+                                // Read the current value of the property
+                                var getMethod = prop.GetGetMethod();
+                                object val = getMethod.Invoke(arg, null);
+
+                                yield return space();
+
+                                yield return $"{name} = ";
+
+                                foreach(var result in objLiteral(val, nesting, noFollowFunc, seenObjects))
+                                {
+                                    yield return result;
+                                }
+                                yield return ",\r\n";
+                            }
+                        }
+
+                        nesting--;
+                        yield return space();
+                        yield return "}";
+                    }
                 }
             }
         }
