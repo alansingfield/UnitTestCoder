@@ -158,6 +158,16 @@ namespace UnitTestCoder.Core.Tests.Literals
             result.ShouldBe("new PqObject() { P = 20, }");
         }
 
+        [TestMethod]
+        public void ObjectLiteralMakerNoFollow()
+        {
+            var m = new ObjectABC() { A = 1, B = 2, C = 3 };
+
+            var result = makeObjectLiteral(m, noFollowFunc: x => x.Name == "B" && x.DeclaringType == typeof(ObjectABC));
+
+            result.ShouldBe("new ObjectABC() { A = 1, C = 3, }");
+        }
+
         private string makeObjectLiteral(object arg, Func<PropertyInfo, bool> noFollowFunc = null)
         {
             return normalise(_objectLiteralMaker.MakeObjectLiteral(arg, noFollowFunc));
