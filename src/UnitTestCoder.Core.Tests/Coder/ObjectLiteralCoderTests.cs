@@ -9,6 +9,7 @@ using UnitTestCoder.Core.Tests.DryIoc;
 using Shouldly;
 using UnitTestCoder.Core.Literal;
 using NSubstitute;
+using System.Reflection;
 
 namespace UnitTestCoder.Core.Tests.Coder
 {
@@ -24,12 +25,13 @@ namespace UnitTestCoder.Core.Tests.Coder
             var maker = container.Resolve<IObjectLiteralMaker>();
 
             var input = new { A = 123 };
+            Func<PropertyInfo, bool> noFollowFunc = x => false;
 
-            maker.MakeObjectLiteral(input).Returns("new { A = 123 }");
+            maker.MakeObjectLiteral(input, noFollowFunc).Returns("new { A = 123 }");
 
-            var result = coder.Code(input, "input");
+            var result = coder.Code(input, "input", noFollowFunc);
 
-            maker.Received(1).MakeObjectLiteral(input);
+            maker.Received(1).MakeObjectLiteral(input, noFollowFunc);
 
             result.ShouldBe("var input = new { A = 123 };");
         }

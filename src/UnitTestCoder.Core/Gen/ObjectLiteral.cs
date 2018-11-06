@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using UnitTestCoder.Core.Coder;
 using UnitTestCoder.Core.Formatting;
@@ -9,7 +10,11 @@ namespace UnitTestCoder.Core.Gen
 {
     public static class ObjectLiteral
     {
-        public static void Gen(object arg, string lvalue = "model", int indent = 3)
+        public static void Gen(
+            object arg, 
+            string lvalue = "model", 
+            int indent = 3, 
+            Func<PropertyInfo, bool> nofollow = null)
         {
             var indenter = new Indenter(offset: indent);
 
@@ -24,7 +29,7 @@ namespace UnitTestCoder.Core.Gen
                 objectLiteralMaker,
                 indenter);
 
-            string text = objectLiteralCoder.Code(arg, lvalue);
+            string text = objectLiteralCoder.Code(arg, lvalue, nofollow);
 
             Console.WriteLine(text);
         }
