@@ -18,11 +18,7 @@ namespace UnitTestCoder.Core.Literal
 
             if(type == typeof(string))
             {
-                string s = (string)arg;
-                if(s.Contains(@"""") || s.Contains(@"\"))
-                    return $@"@""{s.Replace(@"""", @"""""")}""";
-
-                return $@"""{stringEscape(s)}""";
+                return stringLiteral(arg);
             }
 
             if(type == typeof(int) || type == (typeof(int?)))
@@ -62,33 +58,12 @@ namespace UnitTestCoder.Core.Literal
 
             if(type == typeof(byte[]))
             {
-                byte[] bytes = (byte[])arg;
+                return byteArrayLiteral(arg);
+            }
 
-                // new byte[] { 0x01, 0x04 }
-
-                int len = bytes.Length;
-
-                bool useLineBreaks = len > 16;
-
-                string separator(int index)
-                {
-                    if(!useLineBreaks)
-                        return " ";
-
-                    if(index == len - 1)    // Last item always gets a line break.
-                        return "\r\n";
-
-                    if(index % 16 == 15)
-                        return "\r\n";
-
-                    return " ";
-                }
-
-                return "new byte[] {"
-                    + (useLineBreaks ? "\r\n" : " ")
-                    + String.Join("",
-                        bytes.Select((x, i) => $"0x{x:X2},{(separator(i))}"))
-                    + "}";
+            if(type == typeof(string[]))
+            {
+                return stringArrayLiteral(arg);
             }
 
             if(type.IsEnum)
@@ -100,6 +75,56 @@ namespace UnitTestCoder.Core.Literal
             }
 
             throw new Exception("Unexpected data type");
+        }
+
+        private string stringLiteral(object arg)
+        {
+            string s = (string)arg;
+            if(s.Contains(@"""") || s.Contains(@"\"))
+                return $@"@""{s.Replace(@"""", @"""""")}""";
+
+            return $@"""{stringEscape(s)}""";
+        }
+
+        private string byteArrayLiteral(object arg)
+        {
+            byte[] bytes = (byte[])arg;
+
+            // new byte[] { 0x01, 0x04 }
+
+            int len = bytes.Length;
+
+            bool useLineBreaks = len > 16;
+
+            string separator(int index)
+            {
+                if(!useLineBreaks)
+                    return " ";
+
+                if(index == len - 1)    // Last item always gets a line break.
+                    return "\r\n";
+
+                if(index % 16 == 15)
+                    return "\r\n";
+
+                return " ";
+            }
+
+            return "new byte[] {"
+                + (useLineBreaks ? "\r\n" : " ")
+                + String.Join("",
+                    bytes.Select((x, i) => $"0x{x:X2},{(separator(i))}"))
+                + "}";
+        }
+
+        private string stringArrayLiteral(object arg)
+        {
+            string[] array = (string[])arg;
+
+            return "new string[] {\r\n"
+                + String.Join("",
+                array.Select(x => stringLiteral(x) + ",\r\n"))
+                + "}";
         }
 
         private string stringEscape(string arg)

@@ -110,6 +110,24 @@ namespace Didsbury.Tests.CodeGen
         }
 
         [TestMethod]
+        public void ValueLiteralMakerStringArray()
+        {
+            string[] data = new string[] {
+                "Apple",
+                "Carriage\r\nReturn",
+                "\"Cucumber\""
+            };
+
+            _valueLiteralMaker.Literal(data).ShouldBe(@"new string[] {
+""Apple"",
+""Carriage\r\nReturn"",
+@""""""Cucumber"""""",
+}",
+            StringCompareShould.IgnoreLineEndings
+            );
+        }
+
+        [TestMethod]
         public void ValueLiteralMakerEnum()
         {
             var arg = GCCollectionMode.Forced;
