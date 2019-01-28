@@ -39,6 +39,39 @@ namespace UnitTestCoder.Core.Tests.Literals
         }
 
         [TestMethod]
+        public void ObjectLiteralMakerStringArray()
+        {
+            var result = makeObjectLiteral(new string[]
+                {
+                    "A",
+                    "B",
+                });
+
+            result.ShouldBe(normalise(@"new[] { ""A"", ""B"" }"));
+        }
+
+        [TestMethod]
+        public void ObjectLiteralMakerStringList()
+        {
+            var result = makeObjectLiteral(new List<string>()
+                {
+                    "A",
+                    "B",
+                });
+
+            result.ShouldBe(normalise(@"new List<String>() { ""A"", ""B"", }"));
+        }
+
+        [TestMethod]
+        public void ObjectLiteralMakerEmptyString()
+        {
+            var result = makeObjectLiteral(new string[]
+                {});
+
+            result.ShouldBe(normalise(@"new string[0]"));
+        }
+
+        [TestMethod]
         public void ObjectLiteralMakerArrayOfSimpleObject()
         {
             var result = makeObjectLiteral(new[] {

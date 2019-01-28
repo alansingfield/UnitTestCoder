@@ -110,6 +110,61 @@ namespace Didsbury.Tests.CodeGen
         }
 
         [TestMethod]
+        public void ValueLiteralMakerStringArray()
+        {
+            string[] data = new string[] {
+                "Apple",
+                "Carriage\r\nReturn",
+                "\"Cucumber\""
+            };
+
+            _valueLiteralMaker.Literal(data).ShouldBe(@"new[] { ""Apple"", ""Carriage\r\nReturn"", @""""""Cucumber"""""" }",
+            StringCompareShould.IgnoreLineEndings
+            );
+        }
+
+        [TestMethod]
+        public void ValueLiteralMakerStringArrayMultiLine()
+        {
+            // If the resulting text would be over 80 chars we split into multiple lines.
+            string[] data = new string[] {
+                "1234567890",
+                "1234567890",
+                "1234567890",
+                "1234567890",
+                "1234567890",
+                "1234567890",
+                "1234567890",
+                "1234567890",
+                "1234567890",
+            };
+
+            _valueLiteralMaker.Literal(data).ShouldBe(@"new[] {
+""1234567890"",
+""1234567890"",
+""1234567890"",
+""1234567890"",
+""1234567890"",
+""1234567890"",
+""1234567890"",
+""1234567890"",
+""1234567890"",
+}",
+            StringCompareShould.IgnoreLineEndings
+            );
+        }
+
+        [TestMethod]
+        public void ValueLiteralMakerStringArrayEmpty()
+        {
+            string[] data = new string[] { };
+
+            _valueLiteralMaker.Literal(data).ShouldBe(@"new string[0]",
+            StringCompareShould.IgnoreLineEndings
+            );
+        }
+
+        [TestMethod]
         public void ValueLiteralMakerEnum()
         {
             var arg = GCCollectionMode.Forced;

@@ -50,7 +50,7 @@ namespace UnitTestCoder.Core.Literal
                 var type = arg.GetType();
                 string typename = getFullTypeName(type);
 
-                if(type.IsValueType || type == typeof(string))
+                if(valueLiteralMaker.CanMake(type))
                 {
                     yield return literal(arg);
                 }

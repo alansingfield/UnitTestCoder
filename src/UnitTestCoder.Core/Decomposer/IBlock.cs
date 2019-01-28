@@ -9,5 +9,6 @@ namespace UnitTestCoder.Core.Decomposer
         string LValue { get; set; }
         string RValue { get; set; }
         Type DataType { get; set; }
+        object RawValue { get; set; }
     }
 }
