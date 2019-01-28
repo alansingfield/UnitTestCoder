@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -142,9 +143,67 @@ namespace UnitTestCoder.Core.Tests.Literals
             result.ShouldBe(normalise(@"new ObjectABC() { A = 1, B = 2, C = 3, }"));
         }
 
-        private string makeObjectLiteral(object arg)
+
+        [TestMethod]
+        public void ObjectLiteralMakerCircularRefSkip()
         {
-            return normalise(_objectLiteralMaker.MakeObjectLiteral(arg));
+            var x = new CircularRefObject() { A = 10 };
+
+            var result = makeObjectLiteral(x, noFollowFunc: y => y.Name == nameof(CircularRefObject.BadRef));
+            result.ShouldBe("new CircularRefObject() { A = 10, }");
+        }
+
+        [TestMethod]
+        public void ObjectLiteralMakerCircularRefSelf()
+        {
+            var x = new CircularRefObject();
+            x.BadRef = x;
+
+            Should.Throw(() =>
+            {
+                makeObjectLiteral(x);
+            }, typeof(Exception)).Message.ShouldBe("Circular reference detected for object of type 'CircularRefObject'");
+        }
+
+        [TestMethod]
+        public void ObjectLiteralMakerCircularRefOther()
+        {
+            var x = new CircularRefObject();
+            var y = new CircularRefObject();
+            x.BadRef = y;
+            y.BadRef = x;
+
+            Should.Throw(() =>
+            {
+                makeObjectLiteral(x);
+            }, typeof(Exception)).Message.ShouldBe("Circular reference detected for object of type 'CircularRefObject'");
+        }
+
+        [TestMethod]
+        public void ObjectLiteralMakerSkipReadOnly()
+        {
+            var pq = new PqObject() { P = 20 };
+
+            pq.P.ShouldBe(20);
+            pq.Q.ShouldBe(21);
+
+            var result = makeObjectLiteral(pq);
+            result.ShouldBe("new PqObject() { P = 20, }");
+        }
+
+        [TestMethod]
+        public void ObjectLiteralMakerNoFollow()
+        {
+            var m = new ObjectABC() { A = 1, B = 2, C = 3 };
+
+            var result = makeObjectLiteral(m, noFollowFunc: x => x.Name == "B" && x.DeclaringType == typeof(ObjectABC));
+
+            result.ShouldBe("new ObjectABC() { A = 1, C = 3, }");
+        }
+
+        private string makeObjectLiteral(object arg, Func<PropertyInfo, bool> noFollowFunc = null)
+        {
+            return normalise(_objectLiteralMaker.MakeObjectLiteral(arg, noFollowFunc));
         }
 
         private static Regex _normaliseRegex = new Regex(@"\s+");
@@ -179,4 +238,15 @@ namespace UnitTestCoder.Core.Tests.Literals
         public SimpleObject Object1 { get; set; }
     }
 
+    public class CircularRefObject
+    {
+        public int A { get; set; }
+        public CircularRefObject BadRef { get; set; }
+    }
+
+    public class PqObject
+    {
+        public int P { get; set; }
+        public int Q => P + 1;
+    }
 }
