@@ -84,6 +84,14 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
         }
 
         [TestMethod]
+        public void ShouldlyTestMakerStringArrayLiteral()
+        {
+            var x = _shouldlyTestMaker.GenerateShouldBes("myObj", new string[] { "banana", "carrot", });
+            x.ShouldHaveSingleItem();
+            x.Single().ShouldBe(@"myObj.ShouldBe(new[] { ""banana"", ""carrot"" });");
+        }
+
+        [TestMethod]
         public void ShouldlyTestMakerDateLiteral()
         {
             var x = _shouldlyTestMaker.GenerateShouldBes("myDate", new DateTime(2001, 12, 25, 14, 39, 20, 123));
@@ -105,15 +113,28 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
             var x = _shouldlyTestMaker.GenerateShouldBes("myArray", new[] {
                 "string1",
                 "string2"
+            }).ToArray();
+
+            x.Count().ShouldBe(1);
+
+            x[0].ShouldBe(@"myArray.ShouldBe(new[] { ""string1"", ""string2"" });");
+        }
+
+        [TestMethod]
+        public void ShouldlyTestMakerListOfStrings()
+        {
+            var x = _shouldlyTestMaker.GenerateShouldBes("myList", new List<string>() {
+                "string1",
+                "string2"
             }).ToList();
 
-            x.Count().ShouldBe(4);
+            x.Count().ShouldBe(1);
 
-            x[0].ShouldBe(@"myArray.ShouldNotBeNull();");
-            x[1].ShouldBe(@"myArray.Count().ShouldBe(2);");
-            x[2].ShouldBe(@"myArray[0].ShouldBe(""string1"");");
-            x[3].ShouldBe(@"myArray[1].ShouldBe(""string2"");");
+            x[0].ShouldBe(@"myList.ShouldBe(new[] { ""string1"", ""string2"" });");
         }
+
+
+
 
         [TestMethod]
         public void ShouldlyTestMakerDictionaryOfStrings()

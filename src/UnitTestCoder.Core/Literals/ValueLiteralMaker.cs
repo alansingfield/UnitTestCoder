@@ -119,11 +119,30 @@ namespace UnitTestCoder.Core.Literal
 
         private string stringArrayLiteral(object arg)
         {
-            string[] array = (string[])arg;
+            var array = (string[])arg;
 
-            return "new string[] {\r\n"
-                + String.Join("",
-                array.Select(x => stringLiteral(x) + ",\r\n"))
+            if(array.Length == 0)
+                return "new string[0]";
+
+            var literals = array.Select(x => stringLiteral(x)).ToList();
+
+            // Use line breaks if result would be over 80 chars
+            int totalLen = 0;
+            bool useLineBreaks = false;
+            foreach(var l in literals)
+            {
+                totalLen += l.Length;
+                if(totalLen > 80)
+                {
+                    useLineBreaks = true;
+                    break;
+                }
+            }
+
+            return "new[] {"
+                + (useLineBreaks ? "\r\n" : " ")
+                + String.Join(useLineBreaks ? ",\r\n" : ", ", literals)
+                + (useLineBreaks ? ",\r\n" : " ")
                 + "}";
         }
 
@@ -135,6 +154,14 @@ namespace UnitTestCoder.Core.Literal
             if(arg.Contains("\t")) arg = arg.Replace("\t", @"\t");
 
             return arg;
+        }
+
+        public bool CanMake(Type type)
+        {
+            if(type.IsValueType || type == typeof(string) || type == typeof(byte[]) || type == typeof(string[]))
+                return true;
+
+            return false;
         }
     }
 }

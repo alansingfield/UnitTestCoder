@@ -13,5 +13,6 @@ namespace UnitTestCoder.Core.Decomposer
         public string RValue { get; set; }
         public int? Count { get; set; }
         public Type DataType { get; set; }
+        public object RawValue { get; set; }
     }
 }

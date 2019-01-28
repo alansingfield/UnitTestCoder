@@ -41,17 +41,17 @@ namespace UnitTestCoder.Core.Decomposer
 
             if(arg == null)
             {
-                yield return literal(lvalue, "null"); // $"{lvalue}.ShouldBeNull();";
+                yield return literal(lvalue, "null", null); // $"{lvalue}.ShouldBeNull();";
             }
             else
             {
                 var instanceType = arg.GetType();
                 var type = declaredType;
 
-                if(type.IsValueType || type == typeof(string) || type == typeof(byte[]))
+                if(valueLiteralMaker.CanMake(type))
                 {
                     string rvalue = valueLiteralMaker.Literal(arg);
-                    yield return literal(lvalue, rvalue);// $"{lvalue}.ShouldBe({rvalue});";
+                    yield return literal(lvalue, rvalue, arg);// $"{lvalue}.ShouldBe({rvalue});";
                 }
                 else
                 {
@@ -99,7 +99,7 @@ namespace UnitTestCoder.Core.Decomposer
                         {
                             var list = ((IEnumerable)arg).Cast<object>().ToList();
 
-                            yield return arrayStart(lvalue, type, list.Count);                       //$"{lvalue}.ShouldNotBeNull();";
+                            yield return arrayStart(lvalue, type, list.Count, arg);                  //$"{lvalue}.ShouldNotBeNull();";
                                                                                                      //yield return $"{lvalue}.Count().ShouldBe({list.Count()});";
 
                             var elementType = getElementType(declaredType);
@@ -124,11 +124,11 @@ namespace UnitTestCoder.Core.Decomposer
                                 idx++;
                             }
 
-                            yield return arrayEnd(lvalue, type, list.Count);
+                            yield return arrayEnd(lvalue, type, list.Count, arg);
                         }
                         else
                         {
-                            yield return objectStart(lvalue, type);
+                            yield return objectStart(lvalue, type, arg);
 
                             var props = type.GetProperties().ToDictionary(propertyInfo => propertyInfo.Name);
 
@@ -158,19 +158,20 @@ namespace UnitTestCoder.Core.Decomposer
                                 }
                             }
 
-                            yield return objectEnd(lvalue, type);
+                            yield return objectEnd(lvalue, type, arg);
                         }
                     }
                 }
             }
         }
 
-        private IBlock literal(string lvalue, string rvalue)
+        private IBlock literal(string lvalue, string rvalue, object rawValue)
         {
             return new Block()
             {
                 LValue = lvalue,
                 RValue = rvalue,
+                RawValue = rawValue,
                 BlockType = BlockTypeEnum.Literal
             };
         }
@@ -185,24 +186,26 @@ namespace UnitTestCoder.Core.Decomposer
             };
         }
 
-        private IBlock arrayStart(string lvalue, Type dataType, int count)
+        private IBlock arrayStart(string lvalue, Type dataType, int count, object rawValue)
         {
             return new Block()
             {
                 LValue = lvalue,
                 Count = count,
                 DataType = dataType,
-                BlockType = BlockTypeEnum.ArrayStart
+                BlockType = BlockTypeEnum.ArrayStart,
+                RawValue = rawValue
             };
         }
-        private IBlock arrayEnd(string lvalue, Type dataType, int count)
+        private IBlock arrayEnd(string lvalue, Type dataType, int count, object rawValue)
         {
             return new Block()
             {
                 LValue = lvalue,
                 Count = count,
                 DataType = dataType,
-                BlockType = BlockTypeEnum.ArrayEnd
+                BlockType = BlockTypeEnum.ArrayEnd,
+                RawValue = rawValue
             };
         }
 
@@ -228,22 +231,24 @@ namespace UnitTestCoder.Core.Decomposer
             };
         }
 
-        private IBlock objectStart(string lvalue, Type dataType)
+        private IBlock objectStart(string lvalue, Type dataType, object rawValue)
         {
             return new Block()
             {
                 LValue = lvalue,
                 DataType = dataType,
-                BlockType = BlockTypeEnum.ObjectStart
+                BlockType = BlockTypeEnum.ObjectStart,
+                RawValue = rawValue
             };
         }
-        private IBlock objectEnd(string lvalue, Type dataType)
+        private IBlock objectEnd(string lvalue, Type dataType, object rawValue)
         {
             return new Block()
             {
                 LValue = lvalue,
                 DataType = dataType,
-                BlockType = BlockTypeEnum.ObjectEnd
+                BlockType = BlockTypeEnum.ObjectEnd,
+                RawValue = rawValue
             };
         }
 
