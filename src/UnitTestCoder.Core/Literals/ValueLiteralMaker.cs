@@ -74,7 +74,16 @@ namespace UnitTestCoder.Core.Literal
                 return $"{typeFullName}.{Enum.GetName(type, arg)}";
             }
 
-            throw new Exception("Unexpected data type");
+            if(arg is Type)
+            {
+                // For nested types repace + notation with .
+                var argType = (Type)arg;
+                string fullName = ((Type)arg).FullName.Replace("+", ".");
+
+                return $"typeof({fullName})";
+            }
+
+            throw new Exception($"Unexpected data type {type}");
         }
 
         private string stringLiteral(object arg)
@@ -158,7 +167,11 @@ namespace UnitTestCoder.Core.Literal
 
         public bool CanMake(Type type)
         {
-            if(type.IsValueType || type == typeof(string) || type == typeof(byte[]) || type == typeof(string[]))
+            if(type.IsValueType 
+                || type == typeof(string) 
+                || type == typeof(byte[]) 
+                || type == typeof(string[])
+                || type == typeof(Type))
                 return true;
 
             return false;

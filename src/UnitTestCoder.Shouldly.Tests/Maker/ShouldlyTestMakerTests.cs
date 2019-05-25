@@ -279,6 +279,21 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
             x[0].ShouldBe("arg.IncludeThis.ShouldBe(123);");
         }
 
+        [TestMethod]
+        public void ShouldlyTestMakerType()
+        {
+            var myObj = new
+            {
+                StringType = typeof(string)
+            };
+
+            var x = _shouldlyTestMaker.GenerateShouldBes("myObj", myObj).ToList();
+
+            x.Count().ShouldBe(1);
+
+            x[0].ShouldBe(@"myObj.StringType.ShouldBe(typeof(System.String));");
+        }
+
         public class NoFollowTestClass
         {
             public int IncludeThis { get; set; }
