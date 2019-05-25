@@ -167,7 +167,11 @@ namespace UnitTestCoder.Core.Literal
 
         public bool CanMake(Type type)
         {
-            if(type.IsValueType || type == typeof(string) || type == typeof(byte[]) || type == typeof(string[]))
+            if(type.IsValueType 
+                || type == typeof(string) 
+                || type == typeof(byte[]) 
+                || type == typeof(string[])
+                || type == typeof(Type))
                 return true;
 
             return false;
