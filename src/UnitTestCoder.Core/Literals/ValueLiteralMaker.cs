@@ -74,7 +74,16 @@ namespace UnitTestCoder.Core.Literal
                 return $"{typeFullName}.{Enum.GetName(type, arg)}";
             }
 
-            throw new Exception("Unexpected data type");
+            if(arg is Type)
+            {
+                // For nested types repace + notation with .
+                var argType = (Type)arg;
+                string fullName = ((Type)arg).FullName.Replace("+", ".");
+
+                return $"typeof({fullName})";
+            }
+
+            throw new Exception($"Unexpected data type {type}");
         }
 
         private string stringLiteral(object arg)
