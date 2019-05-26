@@ -11,10 +11,12 @@ namespace UnitTestCoder.Core.Decomposer
     public class ObjectDecomposer : IObjectDecomposer
     {
         private readonly IValueLiteralMaker valueLiteralMaker;
+        private readonly ITypeLiteralMaker typeLiteralMaker;
 
-        public ObjectDecomposer(IValueLiteralMaker valueLiteralMaker)
+        public ObjectDecomposer(IValueLiteralMaker valueLiteralMaker, ITypeLiteralMaker typeLiteralMaker)
         {
             this.valueLiteralMaker = valueLiteralMaker;
+            this.typeLiteralMaker = typeLiteralMaker;
         }
         
         public IEnumerable<IBlock> Decompose<T>(
@@ -48,7 +50,14 @@ namespace UnitTestCoder.Core.Decomposer
                 var instanceType = arg.GetType();
                 var type = declaredType;
 
-                if(valueLiteralMaker.CanMake(type))
+                if(arg is Type)
+                {
+                    if(typeLiteralMaker.CanMake((Type)arg))
+                    {
+                        yield return typeBlock(lvalue, typeLiteralMaker.Literal((Type)arg), arg);
+                    }
+                }
+                else if(valueLiteralMaker.CanMake(type))
                 {
                     string rvalue = valueLiteralMaker.Literal(arg);
                     yield return literal(lvalue, rvalue, arg);// $"{lvalue}.ShouldBe({rvalue});";
@@ -173,6 +182,17 @@ namespace UnitTestCoder.Core.Decomposer
                 RValue = rvalue,
                 RawValue = rawValue,
                 BlockType = BlockTypeEnum.Literal
+            };
+        }
+
+        private IBlock typeBlock(string lvalue, string rvalue, object rawValue)
+        {
+            return new Block()
+            {
+                LValue = lvalue,
+                RValue = rvalue,
+                RawValue = rawValue,
+                BlockType = BlockTypeEnum.Type
             };
         }
 

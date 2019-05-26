@@ -39,6 +39,7 @@ namespace UnitTestCoder.Shouldly.Maker
 
                     case BlockTypeEnum.Literal:
                     case BlockTypeEnum.Reference:
+                    case BlockTypeEnum.Type:
                         yield return $"{block.LValue}.ShouldBe({block.RValue});";
                         break;
                 }

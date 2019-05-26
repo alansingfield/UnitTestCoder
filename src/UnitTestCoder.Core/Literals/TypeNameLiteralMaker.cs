@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection.Emit;
 
 namespace UnitTestCoder.Core.Literal
 {
@@ -10,18 +13,21 @@ namespace UnitTestCoder.Core.Literal
     {
         public string Literal(Type type)
         {
-            return getNestedTypeName(type);
+            return getNestedTypeName(type, 0);
         }
 
-        private string getNestedTypeName(Type type)
+        private string getNestedTypeName(Type type, int depth)
         {
+            if(depth > 50)
+                throw new StackOverflowException();
+
             var parts = new List<string>();
             while(type != null)
             {
-                parts.Add(getFullTypeName(type));
+                parts.Add(getFullTypeName(type, depth+1));
 
                 // Get the parent type or null if there is no class nesting
-                type = type.DeclaringType;
+                type = type.IsNested ? type.DeclaringType : null;
             }
 
             // Results are in inner to outer order, reverse so we get Parent.Child.Grandchild
@@ -34,7 +40,7 @@ namespace UnitTestCoder.Core.Literal
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
-        private string getFullTypeName(Type type)
+        private string getFullTypeName(Type type, int depth)
         {
             if(!type.IsGenericType)
                 return type.Name;
@@ -46,12 +52,28 @@ namespace UnitTestCoder.Core.Literal
 
                 delegate (string aggregate, Type t)
                 {
-                    return aggregate + (aggregate == "<" ? "" : ",") + getNestedTypeName(t);
+                    return aggregate + (aggregate == "<" ? "" : ",") + getNestedTypeName(t, depth+1);
                 }
                 ));
             sb.Append(">");
 
             return sb.ToString();
+        }
+
+        public bool CanMake(Type type)
+        {
+            if(type == null)
+                throw new NullReferenceException(nameof(type));
+
+            // Can't do typeof(List<T>)
+            if(type.ContainsGenericParameters)
+                return false;
+
+            var compilerGenerated = type.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false);
+            if(compilerGenerated.Any())
+                return false;
+
+            return true;
         }
     }
 }

@@ -188,35 +188,5 @@ namespace Didsbury.Tests.CodeGen
             }
         }
 
-        [TestMethod]
-        public void ValueLiteralMakerType()
-        {
-            var arg = typeof(string);
-
-            _valueLiteralMaker.Literal(arg).ShouldBe("typeof(System.String)");
-        }
-
-        [TestMethod]
-        public void ValueLiteralMakerSubType()
-        {
-            var arg = typeof(System.Globalization.Calendar);
-
-            _valueLiteralMaker.Literal(arg).ShouldBe("typeof(System.Globalization.Calendar)");
-        }
-
-        [TestMethod]
-        public void ValueLiteralMakerNestedType()
-        {
-            var arg = typeof(Nested.Subclass);
-
-            _valueLiteralMaker.Literal(arg).ShouldBe("typeof(Didsbury.Tests.CodeGen.ValueLiteralMakerTests.Nested.Subclass)");
-        }
-
-        public partial class Nested
-        {
-            public class Subclass
-            {
-            }
-        }
     }
 }

@@ -2,9 +2,9 @@
 
 namespace UnitTestCoder.Core.Literal
 {
-    public interface ITypeNameLiteralMaker
+    public interface ITypeLiteralMaker
     {
-        string Literal(Type type);
         bool CanMake(Type type);
+        string Literal(Type type);
     }
 }
