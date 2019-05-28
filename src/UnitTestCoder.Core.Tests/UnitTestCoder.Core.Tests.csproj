@@ -21,7 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Literals\" />
     <Folder Include="DryIoc\" />
   </ItemGroup>
 

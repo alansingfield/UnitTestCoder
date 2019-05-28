@@ -19,7 +19,7 @@ namespace UnitTestCoder.Population.Tests.Maker
         public void Init()
         {
             _objectPopulationMaker = new ObjectPopulationMaker(
-                new ObjectDecomposer(new ValueLiteralMaker()),
+                new ObjectDecomposer(new ValueLiteralMaker(), new TypeLiteralMaker(new TypeNameLiteralMaker())),
                 new ValueLiteralMaker(),
                 new TypeNameLiteralMaker());
         }

@@ -16,74 +16,93 @@ namespace UnitTestCoder.Core.Literal
 
             var type = arg.GetType();
 
-            if(type == typeof(string))
+            switch(arg)
             {
-                return stringLiteral(arg);
-            }
-
-            if(type == typeof(int) || type == (typeof(int?)))
-            {
-                return arg.ToString();
-            }
-
-            if(type == typeof(decimal) || type == (typeof(decimal?)))
-            {
-                return $"{((decimal)arg).ToString(CultureInfo.InvariantCulture)}m";
-            }
-
-            if(type == typeof(double) || type == (typeof(double?)))
-            {
-                return $"{((double)arg).ToString(CultureInfo.InvariantCulture)}d";
-            }
-
-            if(type == typeof(DateTime) || type == (typeof(DateTime?)))
-            {
-                return $@"DateTime.Parse(""{((DateTime)arg).ToString("O")}"")";
-            }
-
-            if(type == typeof(TimeSpan) || type == (typeof(TimeSpan?)))
-            {
-                return $@"TimeSpan.Parse(""{((TimeSpan)arg).ToString("g", CultureInfo.InvariantCulture)}"")";
-            }
-
-            if(type == typeof(bool) || type == (typeof(bool?)))
-            {
-                return ((bool)arg) ? "true" : "false";
-            }
-
-            if(type == typeof(Guid) || type == (typeof(Guid?)))
-            {
-                return $@"Guid.Parse(""{arg}"")";
-            }
-
-            if(type == typeof(byte[]))
-            {
-                return byteArrayLiteral(arg);
-            }
-
-            if(type == typeof(string[]))
-            {
-                return stringArrayLiteral(arg);
-            }
-
-            if(type.IsEnum)
-            {
-                // If enum is in a nested class use dot notation not plus.
-                string typeFullName = type.FullName.Replace("+", ".");
-
-                return $"{typeFullName}.{Enum.GetName(type, arg)}";
-            }
-
-            if(arg is Type)
-            {
-                // For nested types repace + notation with .
-                var argType = (Type)arg;
-                string fullName = ((Type)arg).FullName.Replace("+", ".");
-
-                return $"typeof({fullName})";
+                case string x:      return stringLiteral(x);
+                case int x:         return intLiteral(x);
+                case decimal x:     return decimalLiteral(x);
+                case double x:      return doubleLiteral(x);
+                case DateTime x:    return dateTimeLiteral(x);
+                case TimeSpan x:    return timeSpanLiteral(x);
+                case bool x:        return boolLiteral(x);
+                case Guid x:        return guidLiteral(x);
+                case byte[] x:      return byteArrayLiteral(x);
+                case string[] x:    return stringArrayLiteral(x);
+                case Enum x:        return enumLiteral(x, type);
             }
 
             throw new Exception($"Unexpected data type {type}");
+        }
+
+        public bool CanMake(Type type)
+        {
+            if(
+                   type == typeof(string)
+                || type == typeof(int)
+                || type == typeof(int?)
+                || type == typeof(decimal)
+                || type == typeof(decimal?)
+                || type == typeof(double)
+                || type == typeof(double?)
+                || type == typeof(DateTime)
+                || type == typeof(DateTime?)
+                || type == typeof(TimeSpan)
+                || type == typeof(TimeSpan?)
+                || type == typeof(bool)
+                || type == typeof(bool?)
+                || type == typeof(Guid)
+                || type == typeof(Guid?)
+                || type == typeof(byte[])
+                || type == typeof(string[])
+                || type.IsEnum
+              )
+                return true;
+
+            return false;
+        }
+
+        private static string intLiteral(object arg)
+        {
+            return arg.ToString();
+        }
+
+        private static string decimalLiteral(object arg)
+        {
+            return $"{((decimal)arg).ToString(CultureInfo.InvariantCulture)}m";
+        }
+
+        private static string doubleLiteral(object arg)
+        {
+            return $"{((double)arg).ToString(CultureInfo.InvariantCulture)}d";
+        }
+
+        private static string dateTimeLiteral(object arg)
+        {
+            return $@"DateTime.Parse(""{((DateTime)arg).ToString("O")}"")";
+        }
+
+        private static string timeSpanLiteral(object arg)
+        {
+            return $@"TimeSpan.Parse(""{((TimeSpan)arg).ToString("g", CultureInfo.InvariantCulture)}"")";
+        }
+
+        private static string boolLiteral(object arg)
+        {
+            return ((bool)arg) ? "true" : "false";
+        }
+
+        private static string guidLiteral(object arg)
+        {
+            return $@"Guid.Parse(""{arg}"")";
+        }
+
+
+        private static string enumLiteral(object arg, Type type)
+        {
+            // If enum is in a nested class use dot notation not plus.
+            string typeFullName = type.FullName.Replace("+", ".");
+
+            return $"{typeFullName}.{Enum.GetName(type, arg)}";
         }
 
         private string stringLiteral(object arg)
@@ -165,16 +184,6 @@ namespace UnitTestCoder.Core.Literal
             return arg;
         }
 
-        public bool CanMake(Type type)
-        {
-            if(type.IsValueType 
-                || type == typeof(string) 
-                || type == typeof(byte[]) 
-                || type == typeof(string[])
-                || type == typeof(Type))
-                return true;
 
-            return false;
-        }
     }
 }

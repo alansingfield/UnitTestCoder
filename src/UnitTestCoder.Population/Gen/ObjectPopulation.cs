@@ -44,7 +44,8 @@ namespace UnitTestCoder.Population.Gen
         {
             var valueLiteralMaker = new ValueLiteralMaker();
             var typeNameLiteralMaker = new TypeNameLiteralMaker();
-            var objectDecomposer = new ObjectDecomposer(valueLiteralMaker);
+            var typeLiteralMaker = new TypeLiteralMaker(typeNameLiteralMaker);
+            var objectDecomposer = new ObjectDecomposer(valueLiteralMaker, typeLiteralMaker);
             var indenter = new Indenter(offset: indent);
 
             var objectPopulationMaker = new ObjectPopulationMaker(

@@ -9,6 +9,7 @@ namespace UnitTestCoder.Core.Decomposer
     public enum BlockTypeEnum
     {
         Literal,
+        Type,
         Reference,
         ArrayStart,
         ArrayEnd,

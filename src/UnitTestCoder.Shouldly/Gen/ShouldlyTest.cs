@@ -60,7 +60,9 @@ namespace UnitTestCoder.Shouldly.Gen
         {
             // A bit of poor-mans DI here to instantiate all our components.
             var valueLiteralMaker = new ValueLiteralMaker();
-            var objectDecomposer = new ObjectDecomposer(valueLiteralMaker);
+            var typeNameLiteralMaker = new TypeNameLiteralMaker();
+            var typeLiteralMaker = new TypeLiteralMaker(typeNameLiteralMaker);
+            var objectDecomposer = new ObjectDecomposer(valueLiteralMaker, typeLiteralMaker);
 
             var shouldlyTestMaker = new ShouldlyTestMaker(
                 objectDecomposer,
