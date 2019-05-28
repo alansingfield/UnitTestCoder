@@ -7,6 +7,7 @@ using UnitTestCoder.Core.Literal;
 using UnitTestCoder.Shouldly.Maker;
 using Shouldly;
 using System.Linq;
+using System.Collections;
 
 namespace UnitTestCoder.Shouldly.Tests.Maker
 {
@@ -136,6 +137,79 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
 
 
 
+        [TestMethod]
+        public void ShouldlyTestMakerEnumerable()
+        {
+            // Plain old enumerable is just tested for null, we can't go enumerating it.
+            // Do a ToList() on it if you want to test each item.
+            var range = Enumerable.Range(1, 2);
+
+            var x = _shouldlyTestMaker.GenerateShouldBes("range", range).ToList();
+
+            x.ShouldBe(new[]
+            {
+                "range.ShouldNotBeNull();",
+            });
+        }
+
+        [TestMethod]
+        public void ShouldlyTestMakerNullEnumerable()
+        {
+            IEnumerable<int> nullEnumerable = null;
+
+            var x = _shouldlyTestMaker.GenerateShouldBes("nullEnumerable", nullEnumerable).ToList();
+
+            x.ShouldBe(new[]
+            {
+                "nullEnumerable.ShouldBe(null);",
+            });
+        }
+
+        [TestMethod]
+        public void ShouldlyTestMakerArrayOfObject()
+        {
+            var arr = new[]
+            {
+                new { A = 1 },
+                new { A = 2 }
+            };
+
+            var x = _shouldlyTestMaker.GenerateShouldBes("arr", arr).ToList();
+
+            x.ShouldBe(new[]
+            {
+                "arr.ShouldNotBeNull();",
+                "arr.Count().ShouldBe(2);",
+                "arr[0].ShouldNotBeNull();",
+                "arr[0].A.ShouldBe(1);",
+                "arr[1].ShouldNotBeNull();",
+                "arr[1].A.ShouldBe(2);",
+            });
+        }
+
+
+        [TestMethod]
+        public void ShouldlyTestMakerArrayList()
+        {
+            // Can't do much with an ArrayList as it can contain anything
+            var arr = new ArrayList();
+            arr.Add(new { A = 1 });
+            arr.Add(new { B = 2 });
+
+            // Can't even cast to dynamic as the ShouldBe extensions can't be picked up
+            //(((dynamic)arr[0]).A).ShouldBe(1);
+            
+            var x = _shouldlyTestMaker.GenerateShouldBes("arr", arr).ToList();
+
+            x.ShouldBe(new[]
+            {
+                "arr.ShouldNotBeNull();",
+                "arr.Count().ShouldBe(2);",
+                "arr[0].ShouldNotBeNull();",
+                "arr[1].ShouldNotBeNull();",
+            });
+        }
+
 
         [TestMethod]
         public void ShouldlyTestMakerDictionaryOfStrings()
@@ -197,10 +271,12 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
                 Bar = "testing"
             }).ToList();
 
-            x.Count().ShouldBe(2);
-
-            x[0].ShouldBe(@"myObj.Foo.ShouldBe(1234);");
-            x[1].ShouldBe(@"myObj.Bar.ShouldBe(""testing"");");
+            x.ShouldBe(new[]
+            {
+                "myObj.ShouldNotBeNull();",
+                "myObj.Foo.ShouldBe(1234);",
+                @"myObj.Bar.ShouldBe(""testing"");"
+            });
         }
 
         [TestMethod]
@@ -214,13 +290,16 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
                 }
             }).ToList();
 
-            x.Count().ShouldBe(1);
-
-            x[0].ShouldBe(@"myObj.Foo.Nested.ShouldBe(123);");
+            x.ShouldBe(new[]
+            {
+                "myObj.ShouldNotBeNull();",
+                "myObj.Foo.ShouldNotBeNull();",
+                "myObj.Foo.Nested.ShouldBe(123);"
+            });
         }
 
         [TestMethod]
-        public void ShouldlyTestMakerObjectNestedEnumerable()
+        public void ShouldlyTestMakerObjectNestedList()
         {
             var x = _shouldlyTestMaker.GenerateShouldBes("myObj", new
             {
@@ -230,11 +309,14 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
                 }
             }).ToList();
 
-            x.Count().ShouldBe(3);
-
-            x[0].ShouldBe(@"myObj.Foo.ShouldNotBeNull();");
-            x[1].ShouldBe(@"myObj.Foo.Count().ShouldBe(1);");
-            x[2].ShouldBe(@"myObj.Foo[0].Nested.ShouldBe(123);");
+            x.ShouldBe(new[]
+            {
+                "myObj.ShouldNotBeNull();",
+                "myObj.Foo.ShouldNotBeNull();",
+                "myObj.Foo.Count().ShouldBe(1);",
+                "myObj.Foo[0].ShouldNotBeNull();",
+                "myObj.Foo[0].Nested.ShouldBe(123);"
+            });
         }
 
         [TestMethod]
@@ -255,10 +337,13 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
 
             //CodeGenUtil.ShouldlyTest(x, "x");
 
-            x.ShouldNotBeNull();
-            x.Count().ShouldBe(2);
-            x[0].ShouldBe("myObj.Item1.Bar.ShouldBe(123);");
-            x[1].ShouldBe("myObj.Item2.ShouldBe(myObj.Item1);");
+            x.ShouldBe(new[]
+            {
+                "myObj.ShouldNotBeNull();",
+                "myObj.Item1.ShouldNotBeNull();",
+                "myObj.Item1.Bar.ShouldBe(123);",
+                "myObj.Item2.ShouldBe(myObj.Item1);"
+            });
         }
 
         [TestMethod]
@@ -275,9 +360,10 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
 
             //CodeGenUtil.ShouldlyTest(x, "x");
 
-            x.ShouldNotBeNull();
-            x.Count().ShouldBe(1);
-            x[0].ShouldBe("arg.IncludeThis.ShouldBe(123);");
+            x.ShouldBe(new[] {
+                "arg.ShouldNotBeNull();",
+                "arg.IncludeThis.ShouldBe(123);"
+            });
         }
 
         [TestMethod]
@@ -290,9 +376,11 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
 
             var x = _shouldlyTestMaker.GenerateShouldBes("myObj", myObj).ToList();
 
-            x.Count().ShouldBe(1);
-
-            x[0].ShouldBe(@"myObj.StringType.ShouldBe(typeof(System.String));");
+            x.ShouldBe(new[]
+            {
+                "myObj.ShouldNotBeNull();",
+                "myObj.StringType.ShouldBe(typeof(System.String));"
+            });
         }
 
         public class NoFollowTestClass
@@ -320,9 +408,10 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
         {
             var myObj = new WithLazyProp(new Lazy<int>(() => 123));
 
-            var x = _shouldlyTestMaker.GenerateShouldBes("myObj", myObj);
-            x.ShouldHaveSingleItem();
-            x.Single().ShouldBe(@"myObj.IntVal.ShouldBe(123);");
+            var x = _shouldlyTestMaker.GenerateShouldBes("myObj", myObj).ToList();
+            x.Count.ShouldBe(2);
+            x[0].ShouldBe(@"myObj.ShouldNotBeNull();");
+            x[1].ShouldBe(@"myObj.IntVal.ShouldBe(123);");
         }
 
         [TestMethod]

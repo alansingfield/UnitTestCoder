@@ -104,7 +104,9 @@ namespace UnitTestCoder.Core.Decomposer
 
                             yield return dictionaryEnd(lvalue, type, dict.Count);
                         }
-                        else if(typeof(IEnumerable).IsAssignableFrom(type))
+                        else if(typeof(IList).IsAssignableFrom(type)
+                            || typeof(IList<>).IsAssignableFrom(type)
+                            )
                         {
                             var list = ((IEnumerable)arg).Cast<object>().ToList();
 
@@ -289,7 +291,9 @@ namespace UnitTestCoder.Core.Decomposer
                                     .Where(t => t.IsGenericType &&
                                            t.GetGenericTypeDefinition() == typeof(IEnumerable<>))
                                     .Select(t => t.GenericTypeArguments[0]).FirstOrDefault();
-            return enumType ?? type;
+
+            // Can't get anything more specific, just return object.
+            return enumType ?? typeof(object);
         }
 
         private Type getDictionaryElementType(Type type)
@@ -301,7 +305,9 @@ namespace UnitTestCoder.Core.Decomposer
                                     .Where(t => t.IsGenericType &&
                                            t.GetGenericTypeDefinition() == typeof(IDictionary<,>))
                                     .Select(t => t.GenericTypeArguments[1]).FirstOrDefault();
-            return enumType ?? type;
+
+            // Can't get anything more specific, just return object.
+            return enumType ?? typeof(object);
         }
 
     }
