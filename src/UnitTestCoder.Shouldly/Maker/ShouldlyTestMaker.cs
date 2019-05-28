@@ -37,6 +37,10 @@ namespace UnitTestCoder.Shouldly.Maker
                         yield return $"{block.LValue}.Count().ShouldBe({block.Count});";
                         break;
 
+                    case BlockTypeEnum.ObjectStart:
+                        yield return $"{block.LValue}.ShouldNotBeNull();";
+                        break;
+
                     case BlockTypeEnum.Literal:
                     case BlockTypeEnum.Reference:
                     case BlockTypeEnum.Type:
