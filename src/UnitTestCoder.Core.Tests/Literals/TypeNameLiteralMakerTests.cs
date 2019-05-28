@@ -86,7 +86,7 @@ namespace UnitTestCoder.Core.Tests.Literals
 
             _typeNameLiteralMaker
                 .CanMake(x)
-                .ShouldBe(true);
+                .ShouldBe(false);
         }
 
         private class PrivateClass
