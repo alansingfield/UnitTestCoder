@@ -16,7 +16,7 @@ namespace UnitTestCoder.Core.Literal
 
         public string Literal(Type type)
         {
-            string typename = typeNameLiteralMaker.Literal(type);
+            string typename = typeNameLiteralMaker.Literal(type, fullyQualify:true);
 
             return $"typeof({typename})";
         }

@@ -6,17 +6,18 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection.Emit;
+using System.Reflection;
 
 namespace UnitTestCoder.Core.Literal
 {
     public class TypeNameLiteralMaker : ITypeNameLiteralMaker
     {
-        public string Literal(Type type)
+        public string Literal(Type type, bool fullyQualify = false)
         {
-            return getNestedTypeName(type, 0);
+            return getNestedTypeName(type, fullyQualify, 0);
         }
 
-        private string getNestedTypeName(Type type, int depth)
+        private string getNestedTypeName(Type type, bool fullyQualify, int depth)
         {
             if(depth > 50)
                 throw new StackOverflowException();
@@ -24,7 +25,7 @@ namespace UnitTestCoder.Core.Literal
             var parts = new List<string>();
             while(type != null)
             {
-                parts.Add(getFullTypeName(type, depth+1));
+                parts.Add(getFullTypeName(type, fullyQualify, depth + 1));
 
                 // Get the parent type or null if there is no class nesting
                 type = type.IsNested ? type.DeclaringType : null;
@@ -40,19 +41,21 @@ namespace UnitTestCoder.Core.Literal
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
-        private string getFullTypeName(Type type, int depth)
+        private string getFullTypeName(Type type, bool fullyQualify, int depth)
         {
+            string typeName = fullyQualify && !type.IsNested ? type.FullName : type.Name;
+
             if(!type.IsGenericType)
-                return type.Name;
+                return typeName;
 
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(type.Name.Substring(0, type.Name.LastIndexOf("`")));
+            sb.Append(typeName.Substring(0, typeName.LastIndexOf("`")));
             sb.Append(type.GetGenericArguments().Aggregate("<",
 
                 delegate (string aggregate, Type t)
                 {
-                    return aggregate + (aggregate == "<" ? "" : ",") + getNestedTypeName(t, depth+1);
+                    return aggregate + (aggregate == "<" ? "" : ",") + getNestedTypeName(t, fullyQualify, depth + 1);
                 }
                 ));
             sb.Append(">");
@@ -65,12 +68,17 @@ namespace UnitTestCoder.Core.Literal
             if(type == null)
                 throw new NullReferenceException(nameof(type));
 
-            // Can't do typeof(List<T>)
+            // Can't do typeof(List<T>) (how would you define T?)
             if(type.ContainsGenericParameters)
                 return false;
 
+            // Can't do anonymous types
             var compilerGenerated = type.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false);
             if(compilerGenerated.Any())
+                return false;
+
+            // Disallow private types (normal or nested)
+            if((!type.IsNested && !type.IsPublic) || (type.IsNested && !type.IsNestedPublic))
                 return false;
 
             return true;

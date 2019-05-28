@@ -11,7 +11,7 @@ using System.Linq;
 namespace UnitTestCoder.Shouldly.Tests.Maker
 {
     [TestClass]
-    public class ShouldlyTestMakerTests
+    public partial class ShouldlyTestMakerTests
     {
         private ShouldlyTestMaker _shouldlyTestMaker;
 
@@ -20,7 +20,8 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
         {
             _shouldlyTestMaker = new ShouldlyTestMaker(
                 new ObjectDecomposer(
-                    new ValueLiteralMaker()),
+                    new ValueLiteralMaker(),
+                    new TypeLiteralMaker(new TypeNameLiteralMaker())),
                 new ValueLiteralMaker());
         }
 
@@ -298,6 +299,45 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
         {
             public int IncludeThis { get; set; }
             public int ExcludeThis { get; set; }
+        }
+
+
+
+        private class WithLazyProp
+        {
+            private readonly Lazy<int> lazyInt;
+
+            public WithLazyProp(Lazy<int> lazyInt)
+            {
+                this.lazyInt = lazyInt;
+            }
+
+            public int IntVal => this.lazyInt.Value;
+        }
+
+        [TestMethod]
+        public void ShouldlyTestMakerLazyProperty()
+        {
+            var myObj = new WithLazyProp(new Lazy<int>(() => 123));
+
+            var x = _shouldlyTestMaker.GenerateShouldBes("myObj", myObj);
+            x.ShouldHaveSingleItem();
+            x.Single().ShouldBe(@"myObj.IntVal.ShouldBe(123);");
+        }
+
+        [TestMethod]
+        public void ShouldlyTestMakerPropertyinfo()
+        {
+            // Pick any old property
+            var propertyInfo = typeof(String).GetProperties()[0];
+
+            // This will go into the wilderness picking out every type declared in the declaring
+            // Assembly. We want this to complete rather than crashing so the user can see their
+            // mistake (and add a nofollow).
+            Should.NotThrow(() =>
+            {
+                var m = _shouldlyTestMaker.GenerateShouldBes("propertyInfo", propertyInfo).ToList();
+            });
         }
     }
 }

@@ -23,7 +23,7 @@ namespace UnitTestCoder.Core.Tests.Literals
         {
             var arg = typeof(string);
 
-            _typeLiteralMaker.Literal(arg).ShouldBe("typeof(String)");
+            _typeLiteralMaker.Literal(arg).ShouldBe("typeof(System.String)");
         }
 
         [TestMethod]
@@ -31,7 +31,7 @@ namespace UnitTestCoder.Core.Tests.Literals
         {
             var arg = typeof(System.Globalization.Calendar);
 
-            _typeLiteralMaker.Literal(arg).ShouldBe("typeof(Calendar)");
+            _typeLiteralMaker.Literal(arg).ShouldBe("typeof(System.Globalization.Calendar)");
         }
 
         [TestMethod]
@@ -39,7 +39,7 @@ namespace UnitTestCoder.Core.Tests.Literals
         {
             var arg = typeof(Nested.Subclass);
 
-            _typeLiteralMaker.Literal(arg).ShouldBe("typeof(ValueLiteralMakerTests.Nested.Subclass)");
+            _typeLiteralMaker.Literal(arg).ShouldBe("typeof(UnitTestCoder.Core.Tests.Literals.TypeLiteralMakerTests.Nested.Subclass)");
         }
 
         public partial class Nested
