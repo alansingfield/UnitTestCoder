@@ -48,28 +48,78 @@ namespace Didsbury.Tests.CodeGen
         [TestMethod]
         public void ValueLiteralMakerInt()
         {
-            _valueLiteralMaker.Literal(12345).ShouldBe(@"12345");
+            _valueLiteralMaker.CanMake(typeof(int)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(int?)).ShouldBe(true);
+            _valueLiteralMaker.Literal(int.MaxValue).ShouldBe("2147483647");
         }
+        [TestMethod]
+        public void ValueLiteralMakerLong()
+        {
+            _valueLiteralMaker.CanMake(typeof(long)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(long?)).ShouldBe(true);
+            _valueLiteralMaker.Literal(long.MaxValue).ShouldBe("9223372036854775807L");
+        }
+        [TestMethod]
+        public void ValueLiteralMakerULong()
+        {
+            _valueLiteralMaker.CanMake(typeof(ulong)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(ulong?)).ShouldBe(true);
+            _valueLiteralMaker.Literal(ulong.MaxValue).ShouldBe("18446744073709551615ul");
+        }
+
+
         [TestMethod]
         public void ValueLiteralMakerBoolean()
         {
+            _valueLiteralMaker.CanMake(typeof(bool)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(bool?)).ShouldBe(true);
+
             _valueLiteralMaker.Literal(false).ShouldBe(@"false");
+            _valueLiteralMaker.Literal(true).ShouldBe(@"true");
         }
+
         [TestMethod]
         public void ValueLiteralMakerDouble()
         {
-            _valueLiteralMaker.Literal(2.34d).ShouldBe(@"2.34d");
+            _valueLiteralMaker.CanMake(typeof(double)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(double?)).ShouldBe(true);
+
+            _valueLiteralMaker.Literal(1.23456d).ShouldBe("1.23456d");
+            _valueLiteralMaker.Literal(double.MaxValue).ShouldBe("double.MaxValue");
+            _valueLiteralMaker.Literal(double.MinValue).ShouldBe("double.MinValue");
         }
+
+        [TestMethod]
+        public void ValueLiteralMakerFloat()
+        {
+            _valueLiteralMaker.CanMake(typeof(float)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(float?)).ShouldBe(true);
+
+            _valueLiteralMaker.Literal(1.23456f).ShouldBe("1.23456f");
+            _valueLiteralMaker.Literal(float.MaxValue).ShouldBe("float.MaxValue");
+            _valueLiteralMaker.Literal(float.MinValue).ShouldBe("float.MinValue");
+        }
+
+
         [TestMethod]
         public void ValueLiteralMakerTimeSpan()
         {
-            _valueLiteralMaker.Literal(TimeSpan.Parse("13:45:23")).ShouldBe(@"TimeSpan.Parse(""13:45:23"")");
+            _valueLiteralMaker.Literal(new TimeSpan(13,45,23)).ShouldBe(@"TimeSpan.Parse(""13:45:23"")");
         }
+
+        [TestMethod]
+        public void ValueLiteralMakerTimeSpanFull()
+        {
+            _valueLiteralMaker.Literal(new TimeSpan(365, 23, 58, 59, 123).Add(TimeSpan.FromTicks(4567)))
+                .ShouldBe(@"TimeSpan.Parse(""365:23:58:59.1234567"")");
+        }
+
         [TestMethod]
         public void ValueLiteralMakerDateTime()
         {
             _valueLiteralMaker.Literal(DateTime.Parse("2014-03-09T15:59:23.1234567")).ShouldBe(@"DateTime.Parse(""2014-03-09T15:59:23.1234567"")");
         }
+
         [TestMethod]
         public void ValueLiteralMakerSmallByteArray()
         {
