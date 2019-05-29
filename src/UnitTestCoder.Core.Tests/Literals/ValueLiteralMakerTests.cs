@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Shouldly;
 using UnitTestCoder.Core.Literal;
 
-namespace Didsbury.Tests.CodeGen
+namespace UnitTestCoder.Core.Tests.Literals
 {
     [TestClass]
     public class ValueLiteralMakerTests
@@ -51,6 +51,7 @@ namespace Didsbury.Tests.CodeGen
             _valueLiteralMaker.CanMake(typeof(int)).ShouldBe(true);
             _valueLiteralMaker.CanMake(typeof(int?)).ShouldBe(true);
             _valueLiteralMaker.Literal(int.MaxValue).ShouldBe("2147483647");
+            _valueLiteralMaker.Literal(int.MinValue).ShouldBe("-2147483648");
         }
         [TestMethod]
         public void ValueLiteralMakerLong()
@@ -58,7 +59,9 @@ namespace Didsbury.Tests.CodeGen
             _valueLiteralMaker.CanMake(typeof(long)).ShouldBe(true);
             _valueLiteralMaker.CanMake(typeof(long?)).ShouldBe(true);
             _valueLiteralMaker.Literal(long.MaxValue).ShouldBe("9223372036854775807L");
+            _valueLiteralMaker.Literal(long.MinValue).ShouldBe("-9223372036854775808L");
         }
+
         [TestMethod]
         public void ValueLiteralMakerULong()
         {
@@ -76,6 +79,17 @@ namespace Didsbury.Tests.CodeGen
 
             _valueLiteralMaker.Literal(false).ShouldBe(@"false");
             _valueLiteralMaker.Literal(true).ShouldBe(@"true");
+        }
+
+        [TestMethod]
+        public void ValueLiteralMakerDecimal()
+        {
+            _valueLiteralMaker.CanMake(typeof(decimal)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(decimal?)).ShouldBe(true);
+
+            _valueLiteralMaker.Literal(1.23456m).ShouldBe("1.23456m");
+            _valueLiteralMaker.Literal(decimal.MaxValue).ShouldBe("79228162514264337593543950335m");
+            _valueLiteralMaker.Literal(decimal.MinValue).ShouldBe("-79228162514264337593543950335m");
         }
 
         [TestMethod]
@@ -102,8 +116,52 @@ namespace Didsbury.Tests.CodeGen
 
 
         [TestMethod]
+        public void ValueLiteralMakerShort()
+        {
+            _valueLiteralMaker.CanMake(typeof(short)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(short?)).ShouldBe(true);
+
+            _valueLiteralMaker.Literal((short)32767).ShouldBe("32767");
+            _valueLiteralMaker.Literal((short)-32768).ShouldBe("-32768");
+        }
+
+        [TestMethod]
+        public void ValueLiteralMakerUShort()
+        {
+            _valueLiteralMaker.CanMake(typeof(ushort)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(ushort?)).ShouldBe(true);
+
+            _valueLiteralMaker.Literal((ushort)65535).ShouldBe("65535");
+            _valueLiteralMaker.Literal((ushort)0).ShouldBe("0");
+        }
+
+        [TestMethod]
+        public void ValueLiteralMakerByte()
+        {
+            _valueLiteralMaker.CanMake(typeof(byte)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(byte?)).ShouldBe(true);
+
+            _valueLiteralMaker.Literal((byte)255).ShouldBe("255");
+            _valueLiteralMaker.Literal((byte)0).ShouldBe("0");
+        }
+
+        [TestMethod]
+        public void ValueLiteralMakerSByte()
+        {
+            _valueLiteralMaker.CanMake(typeof(sbyte)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(sbyte?)).ShouldBe(true);
+
+            _valueLiteralMaker.Literal((sbyte)127).ShouldBe("127");
+            _valueLiteralMaker.Literal((sbyte)-128).ShouldBe("-128");
+        }
+
+
+        [TestMethod]
         public void ValueLiteralMakerTimeSpan()
         {
+            _valueLiteralMaker.CanMake(typeof(TimeSpan)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(TimeSpan?)).ShouldBe(true);
+
             _valueLiteralMaker.Literal(new TimeSpan(13,45,23)).ShouldBe(@"TimeSpan.Parse(""13:45:23"")");
         }
 
@@ -117,12 +175,28 @@ namespace Didsbury.Tests.CodeGen
         [TestMethod]
         public void ValueLiteralMakerDateTime()
         {
+            _valueLiteralMaker.CanMake(typeof(DateTime)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(DateTime?)).ShouldBe(true);
+
             _valueLiteralMaker.Literal(DateTime.Parse("2014-03-09T15:59:23.1234567")).ShouldBe(@"DateTime.Parse(""2014-03-09T15:59:23.1234567"")");
+        }
+
+        [TestMethod]
+        public void ValueLiteralMakerGuid()
+        {
+            _valueLiteralMaker.CanMake(typeof(Guid)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(Guid?)).ShouldBe(true);
+
+            _valueLiteralMaker.Literal(
+                Guid.Parse("b64bd5fb-25da-454e-85c0-1ecc54743bfe"))
+                .ShouldBe(@"Guid.Parse(""b64bd5fb-25da-454e-85c0-1ecc54743bfe"")");
         }
 
         [TestMethod]
         public void ValueLiteralMakerSmallByteArray()
         {
+            _valueLiteralMaker.CanMake(typeof(byte[])).ShouldBe(true);
+
             _valueLiteralMaker.Literal(new byte[] { 0x01, 0x02, 0x03 }).ShouldBe("new byte[] { 0x01, 0x02, 0x03, }");
         }
 
@@ -162,6 +236,8 @@ namespace Didsbury.Tests.CodeGen
         [TestMethod]
         public void ValueLiteralMakerStringArray()
         {
+            _valueLiteralMaker.CanMake(typeof(string[])).ShouldBe(true);
+
             string[] data = new string[] {
                 "Apple",
                 "Carriage\r\nReturn",
@@ -227,7 +303,7 @@ namespace Didsbury.Tests.CodeGen
         {
             var arg = Nested.NestedEnum.Default;
 
-            _valueLiteralMaker.Literal(arg).ShouldBe("Didsbury.Tests.CodeGen.ValueLiteralMakerTests.Nested.NestedEnum.Default");
+            _valueLiteralMaker.Literal(arg).ShouldBe("UnitTestCoder.Core.Tests.Literals.ValueLiteralMakerTests.Nested.NestedEnum.Default");
         }
 
         public partial class Nested
