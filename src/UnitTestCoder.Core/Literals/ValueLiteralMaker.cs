@@ -19,16 +19,31 @@ namespace UnitTestCoder.Core.Literal
             switch(arg)
             {
                 case string x:      return stringLiteral(x);
-                case int x:         return intLiteral(x);
-                case decimal x:     return decimalLiteral(x);
+
+                case int x:         return $"{x}";
+                case uint x:        return $"{x}u";
+                case long x:        return $"{x}L";
+                case ulong x:       return $"{x}ul";
+
+                case short x:       return $"{x}";
+                case ushort x:      return $"{x}";
+                case byte x:        return $"{x}";
+                case sbyte x:       return $"{x}";
+
+                case decimal x:     return $"{x.ToString(CultureInfo.InvariantCulture)}m";
                 case double x:      return doubleLiteral(x);
-                case DateTime x:    return dateTimeLiteral(x);
-                case TimeSpan x:    return timeSpanLiteral(x);
-                case bool x:        return boolLiteral(x);
-                case Guid x:        return guidLiteral(x);
+                case float x:       return floatLiteral(x);
+
+                case DateTime x:    return $@"DateTime.Parse(""{x.ToString("O")}"")";
+                case TimeSpan x:    return $@"TimeSpan.Parse(""{x.ToString("g",
+                                                CultureInfo.InvariantCulture)}"")";
+
+                case bool x:        return x ? "true" : "false";
+                case Guid x:        return $@"Guid.Parse(""{x}"")";
+                case Enum x:        return enumLiteral(x, type);
+
                 case byte[] x:      return byteArrayLiteral(x);
                 case string[] x:    return stringArrayLiteral(x);
-                case Enum x:        return enumLiteral(x, type);
             }
 
             throw new Exception($"Unexpected data type {type}");
@@ -38,64 +53,74 @@ namespace UnitTestCoder.Core.Literal
         {
             if(
                    type == typeof(string)
+
                 || type == typeof(int)
                 || type == typeof(int?)
+                || type == typeof(uint)
+                || type == typeof(uint?)
+                || type == typeof(long)
+                || type == typeof(long?)
+                || type == typeof(ulong)
+                || type == typeof(ulong?)
+
+                || type == typeof(short)
+                || type == typeof(short?)
+                || type == typeof(ushort)
+                || type == typeof(ushort?)
+                || type == typeof(byte)
+                || type == typeof(byte?)
+                || type == typeof(sbyte)
+                || type == typeof(sbyte?)
+
                 || type == typeof(decimal)
                 || type == typeof(decimal?)
                 || type == typeof(double)
                 || type == typeof(double?)
+                || type == typeof(float)
+                || type == typeof(float?)
+
                 || type == typeof(DateTime)
                 || type == typeof(DateTime?)
                 || type == typeof(TimeSpan)
                 || type == typeof(TimeSpan?)
+                
                 || type == typeof(bool)
                 || type == typeof(bool?)
                 || type == typeof(Guid)
                 || type == typeof(Guid?)
+                || type.IsEnum
+
                 || type == typeof(byte[])
                 || type == typeof(string[])
-                || type.IsEnum
               )
                 return true;
 
             return false;
         }
 
-        private static string intLiteral(object arg)
+        private string doubleLiteral(double x)
         {
-            return arg.ToString();
+            // Values very close to Double.MaxValue / MinValue are not compilable
+            // as G15 rounded literals because the rounding sends them higher than
+            // the maximum / lower than the minimum. It's clearer to write MinValue
+            // and MaxValue anyway...
+            switch(x)
+            {
+                case double.MaxValue: return "double.MaxValue";
+                case double.MinValue: return "double.MinValue";
+                default: return $"{x.ToString(CultureInfo.InvariantCulture)}d";
+            }
         }
 
-        private static string decimalLiteral(object arg)
+        private string floatLiteral(float x)
         {
-            return $"{((decimal)arg).ToString(CultureInfo.InvariantCulture)}m";
+            switch(x)
+            {
+                case float.MaxValue: return "float.MaxValue";
+                case float.MinValue: return "float.MinValue";
+                default: return $"{x.ToString(CultureInfo.InvariantCulture)}f";
+            }
         }
-
-        private static string doubleLiteral(object arg)
-        {
-            return $"{((double)arg).ToString(CultureInfo.InvariantCulture)}d";
-        }
-
-        private static string dateTimeLiteral(object arg)
-        {
-            return $@"DateTime.Parse(""{((DateTime)arg).ToString("O")}"")";
-        }
-
-        private static string timeSpanLiteral(object arg)
-        {
-            return $@"TimeSpan.Parse(""{((TimeSpan)arg).ToString("g", CultureInfo.InvariantCulture)}"")";
-        }
-
-        private static string boolLiteral(object arg)
-        {
-            return ((bool)arg) ? "true" : "false";
-        }
-
-        private static string guidLiteral(object arg)
-        {
-            return $@"Guid.Parse(""{arg}"")";
-        }
-
 
         private static string enumLiteral(object arg, Type type)
         {
@@ -105,7 +130,7 @@ namespace UnitTestCoder.Core.Literal
             return $"{typeFullName}.{Enum.GetName(type, arg)}";
         }
 
-        private string stringLiteral(object arg)
+        private string stringLiteral(string arg)
         {
             string s = (string)arg;
             if(s.Contains(@"""") || s.Contains(@"\"))
@@ -114,13 +139,9 @@ namespace UnitTestCoder.Core.Literal
             return $@"""{stringEscape(s)}""";
         }
 
-        private string byteArrayLiteral(object arg)
+        private string byteArrayLiteral(byte[] arg)
         {
-            byte[] bytes = (byte[])arg;
-
-            // new byte[] { 0x01, 0x04 }
-
-            int len = bytes.Length;
+            int len = arg.Length;
 
             bool useLineBreaks = len > 16;
 
@@ -141,7 +162,7 @@ namespace UnitTestCoder.Core.Literal
             return "new byte[] {"
                 + (useLineBreaks ? "\r\n" : " ")
                 + String.Join("",
-                    bytes.Select((x, i) => $"0x{x:X2},{(separator(i))}"))
+                    arg.Select((x, i) => $"0x{x:X2},{(separator(i))}"))
                 + "}";
         }
 

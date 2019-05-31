@@ -198,6 +198,8 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
 
             // Can't even cast to dynamic as the ShouldBe extensions can't be picked up
             //(((dynamic)arr[0]).A).ShouldBe(1);
+            // Maybe we need to do a typeof() check, then cast it to the known type
+            // then push through...?
             
             var x = _shouldlyTestMaker.GenerateShouldBes("arr", arr).ToList();
 
