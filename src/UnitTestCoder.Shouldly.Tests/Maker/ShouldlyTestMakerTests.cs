@@ -385,6 +385,46 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
             });
         }
 
+
+        [TestMethod]
+        public void ShouldlyTestMakerEnum()
+        {
+            UriFormat uriFormat = UriFormat.SafeUnescaped;
+
+            var x = _shouldlyTestMaker.GenerateShouldBes("uriFormat", uriFormat).ToList();
+
+            x.ShouldBe(new[]
+            {
+                "uriFormat.ShouldBe(System.UriFormat.SafeUnescaped);"
+            });
+        }
+
+        [TestMethod]
+        public void ShouldlyTestMakerEnumNullable()
+        {
+            UriFormat? uriFormat = UriFormat.SafeUnescaped;
+
+            var x = _shouldlyTestMaker.GenerateShouldBes("uriFormat", uriFormat).ToList();
+
+            x.ShouldBe(new[]
+            {
+                "uriFormat.ShouldBe(System.UriFormat.SafeUnescaped);"
+            });
+        }
+
+        [TestMethod]
+        public void ShouldlyTestMakerEnumNullableNull()
+        {
+            UriFormat? uriFormat = null;
+
+            var x = _shouldlyTestMaker.GenerateShouldBes("uriFormat", uriFormat).ToList();
+
+            x.ShouldBe(new[]
+            {
+                "uriFormat.ShouldBe(null);"
+            });
+        }
+
         public class NoFollowTestClass
         {
             public int IncludeThis { get; set; }
