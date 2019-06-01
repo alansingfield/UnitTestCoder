@@ -51,51 +51,35 @@ namespace UnitTestCoder.Core.Literal
 
         public bool CanMake(Type type)
         {
-            if(
-                   type == typeof(string)
+            Type t = Nullable.GetUnderlyingType(type) ?? type;
 
-                || type == typeof(int)
-                || type == typeof(int?)
-                || type == typeof(uint)
-                || type == typeof(uint?)
-                || type == typeof(long)
-                || type == typeof(long?)
-                || type == typeof(ulong)
-                || type == typeof(ulong?)
+            return (
+                   t == typeof(string)
 
-                || type == typeof(short)
-                || type == typeof(short?)
-                || type == typeof(ushort)
-                || type == typeof(ushort?)
-                || type == typeof(byte)
-                || type == typeof(byte?)
-                || type == typeof(sbyte)
-                || type == typeof(sbyte?)
+                || t == typeof(int)
+                || t == typeof(uint)
+                || t == typeof(long)
+                || t == typeof(ulong)
 
-                || type == typeof(decimal)
-                || type == typeof(decimal?)
-                || type == typeof(double)
-                || type == typeof(double?)
-                || type == typeof(float)
-                || type == typeof(float?)
+                || t == typeof(short)
+                || t == typeof(ushort)
+                || t == typeof(byte)
+                || t == typeof(sbyte)
 
-                || type == typeof(DateTime)
-                || type == typeof(DateTime?)
-                || type == typeof(TimeSpan)
-                || type == typeof(TimeSpan?)
-                
-                || type == typeof(bool)
-                || type == typeof(bool?)
-                || type == typeof(Guid)
-                || type == typeof(Guid?)
-                || type.IsEnum
+                || t == typeof(decimal)
+                || t == typeof(double)
+                || t == typeof(float)
 
-                || type == typeof(byte[])
-                || type == typeof(string[])
-              )
-                return true;
+                || t == typeof(DateTime)
+                || t == typeof(TimeSpan)
 
-            return false;
+                || t == typeof(bool)
+                || t == typeof(Guid)
+                || t.IsEnum
+
+                || t == typeof(byte[])
+                || t == typeof(string[])
+              );
         }
 
         private string doubleLiteral(double x)
