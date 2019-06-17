@@ -59,9 +59,11 @@ namespace UnitTestCoder.Core.Gen
 
             var valueLiteralMaker = new ValueLiteralMaker();
             var typeNameLiteralMaker = new TypeNameLiteralMaker();
+            var typeLiteralMaker = new TypeLiteralMaker(typeNameLiteralMaker);
             var objectLiteralMaker = new ObjectLiteralMaker(
                 valueLiteralMaker,
                 typeNameLiteralMaker,
+                typeLiteralMaker,
                 indenter);
 
             var objectLiteralCoder = new ObjectLiteralCoder(

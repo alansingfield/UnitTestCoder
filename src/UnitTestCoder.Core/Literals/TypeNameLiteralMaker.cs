@@ -25,10 +25,19 @@ namespace UnitTestCoder.Core.Literal
             var parts = new List<string>();
             while(type != null)
             {
-                parts.Add(getFullTypeName(type, fullyQualify, depth + 1));
+                parts.Add(getFullTypeName(type, fullyQualify, depth: depth + 1));
+
+                // Generic parameters e.g. T have the DeclaringType as the type they are part of
+                // so we must exit to avoid infinite loop.
+                if(type.IsGenericParameter)
+                    break;
+
+                // Reached the end of the nesting.
+                if(!type.IsNested)
+                    break;
 
                 // Get the parent type or null if there is no class nesting
-                type = type.IsNested ? type.DeclaringType : null;
+                type = type.DeclaringType;
             }
 
             // Results are in inner to outer order, reverse so we get Parent.Child.Grandchild
@@ -45,32 +54,27 @@ namespace UnitTestCoder.Core.Literal
         {
             string typeName = fullyQualify && !type.IsNested ? type.FullName : type.Name;
 
+            // If this is a generic parameter (e.g. the T in List<T>) we should return an empty string
+            // This is so we get an open generic type like typeof(IDictionary<,>)
+            if(type.IsGenericParameter)
+                return "";
+
             if(!type.IsGenericType)
                 return typeName;
 
-            StringBuilder sb = new StringBuilder();
+            // We will have something like List`T - we want the text before the backtick.
+            string baseName = typeName.Substring(0, typeName.LastIndexOf("`"));
 
-            sb.Append(typeName.Substring(0, typeName.LastIndexOf("`")));
-            sb.Append(type.GetGenericArguments().Aggregate("<",
+            var genericArgs = String.Join(",", type.GetGenericArguments()
+                .Select(g => getNestedTypeName(g, fullyQualify, depth + 1)));
 
-                delegate (string aggregate, Type t)
-                {
-                    return aggregate + (aggregate == "<" ? "" : ",") + getNestedTypeName(t, fullyQualify, depth + 1);
-                }
-                ));
-            sb.Append(">");
-
-            return sb.ToString();
+            return $"{baseName}<{genericArgs}>";
         }
 
         public bool CanMake(Type type)
         {
             if(type == null)
                 throw new NullReferenceException(nameof(type));
-
-            // Can't do typeof(List<T>) (how would you define T?)
-            if(type.ContainsGenericParameters)
-                return false;
 
             // Can't do anonymous types
             var compilerGenerated = type.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false);

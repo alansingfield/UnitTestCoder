@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -20,10 +21,16 @@ namespace UnitTestCoder.Core.Tests.Literals
         [TestInitialize]
         public void Init()
         {
+            var indenter = new Indenter();
+            var valueLiteralMaker = new ValueLiteralMaker();
+            var typeNameLiteralMaker = new TypeNameLiteralMaker();
+            var typeLiteralMaker = new TypeLiteralMaker(typeNameLiteralMaker);
+
             _objectLiteralMaker = new ObjectLiteralMaker(
-                new ValueLiteralMaker(),
-                new TypeNameLiteralMaker(),
-                new Indenter());
+                valueLiteralMaker,
+                typeNameLiteralMaker,
+                typeLiteralMaker,
+                indenter);
         }
 
         [TestMethod]
@@ -201,6 +208,42 @@ namespace UnitTestCoder.Core.Tests.Literals
             result.ShouldBe("new ObjectABC() { A = 1, C = 3, }");
         }
 
+        [TestMethod]
+        public void ObjectLiteralMakerTypeof()
+        {
+            var m = typeof(string);
+
+            var result = makeObjectLiteral(m);
+            result.ShouldBe("typeof(System.String)");
+        }
+
+        [TestMethod]
+        public void ObjectLiteralMakerTypeofObject()
+        {
+            var pq = new TypeofObject() { T = typeof(string) };
+
+            var result = makeObjectLiteral(pq);
+            result.ShouldBe("new TypeofObject() { T = typeof(System.String), }");
+        }
+
+        [TestMethod]
+        public void ObjectLiteralMakerTypeofInvalid()
+        {
+            var corelib = Assembly.GetAssembly(typeof(string));
+
+            // Find a private, non-anonymous type somewhere in mscorlib.
+            // This should generate a commented-out typename.
+            Type privateType = corelib.DefinedTypes.First(
+                x => x.IsNotPublic
+                && !x.GetCustomAttributes<CompilerGeneratedAttribute>().Any()
+                && x.Namespace != null);
+
+            var pq = new TypeofObject() { T = privateType };
+
+            var result = makeObjectLiteral(pq);
+            result.ShouldBe("new TypeofObject() { T = typeof(/*FxResources.System.Private.CoreLib.SR*/), }");
+        }
+
         private string makeObjectLiteral(object arg, Func<PropertyInfo, bool> noFollowFunc = null)
         {
             return normalise(_objectLiteralMaker.MakeObjectLiteral(arg, noFollowFunc));
@@ -248,5 +291,10 @@ namespace UnitTestCoder.Core.Tests.Literals
     {
         public int P { get; set; }
         public int Q => P + 1;
+    }
+
+    public class TypeofObject
+    {
+        public Type T { get; set; }
     }
 }
