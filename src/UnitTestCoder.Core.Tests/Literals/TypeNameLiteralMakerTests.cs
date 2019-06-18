@@ -111,6 +111,61 @@ namespace UnitTestCoder.Core.Tests.Literals
                 .ShouldBe(false);
         }
 
+        [TestMethod]
+        public void TypeNameLiteralString()
+        {
+            _typeNameLiteralMaker
+                .Literal(typeof(string), fullyQualify: true)
+                .ShouldBe("string");
+        }
+
+        [TestMethod]
+        public void TypeNameLiteralInt()
+        {
+            _typeNameLiteralMaker
+                .Literal(typeof(int), fullyQualify: true)
+                .ShouldBe("int");
+        }
+
+        [TestMethod]
+        public void TypeNameLiteralNullableInt()
+        {
+            _typeNameLiteralMaker
+                .Literal(typeof(int?), fullyQualify: true)
+                .ShouldBe("int?");
+        }
+
+        [TestMethod]
+        public void TypeNameLiteralStringArray()
+        {
+            _typeNameLiteralMaker
+                .Literal(typeof(string[]), fullyQualify: true)
+                .ShouldBe("string[]");
+        }
+
+        [TestMethod]
+        public void TypeNameLiteralStringArray2D()
+        {
+            _typeNameLiteralMaker
+                .Literal(typeof(string[,]), fullyQualify: true)
+                .ShouldBe("string[,]");
+        }
+
+        [TestMethod]
+        public void TypeNameLiteralObject()
+        {
+            _typeNameLiteralMaker
+                .Literal(typeof(object), fullyQualify: true)
+                .ShouldBe("object");
+        }
+
+        [TestMethod]
+        public void TypeNameLiteralArrayOfNested()
+        {
+            _typeNameLiteralMaker
+                .Literal(typeof(NormalClass.NestedClass[,]), fullyQualify: false)
+                .ShouldBe("NormalClass.NestedClass[,]");
+        }
     }
 
     public class NormalClass

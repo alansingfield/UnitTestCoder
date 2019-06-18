@@ -17,6 +17,7 @@ namespace UnitTestCoder.Core.Literal
             return getNestedTypeName(type, fullyQualify, 0);
         }
 
+
         private string getNestedTypeName(Type type, bool fullyQualify, int depth)
         {
             if(depth > 50)
@@ -52,13 +53,32 @@ namespace UnitTestCoder.Core.Literal
         /// <returns></returns>
         private string getFullTypeName(Type type, bool fullyQualify, int depth)
         {
-            string typeName = fullyQualify && !type.IsNested ? type.FullName : type.Name;
-
             // If this is a generic parameter (e.g. the T in List<T>) we should return an empty string
             // This is so we get an open generic type like typeof(IDictionary<,>)
             if(type.IsGenericParameter)
                 return "";
 
+            if(type.IsArray)
+            {
+                // Create [] for 1d array, [,] for 2d array and so on.
+                string indexer =
+                    "["
+                    + new string(',', (type.GetArrayRank() - 1))
+                    + "]";
+
+                return getNestedTypeName(type.GetElementType(), fullyQualify, depth + 1) 
+                    + indexer;
+            }
+
+            // Simple type like int, string, nullable int etc?
+            string simple = simpleTypeName(type);
+            if(simple != null)
+                return simple;
+
+
+            string typeName = fullyQualify && !type.IsNested ? type.FullName : type.Name;
+
+            // Non-generics, return the type name.
             if(!type.IsGenericType)
                 return typeName;
 
@@ -69,6 +89,48 @@ namespace UnitTestCoder.Core.Literal
                 .Select(g => getNestedTypeName(g, fullyQualify, depth + 1)));
 
             return $"{baseName}<{genericArgs}>";
+        }
+
+        
+        private string simpleTypeName(Type type)
+        {
+            if(type == typeof(string))
+                return "string";
+
+            if(type == typeof(object))
+                return "object";
+
+            var nullable = Nullable.GetUnderlyingType(type);
+            var root = nullable ?? type;
+
+            var builtIn = builtInType(Type.GetTypeCode(root));
+
+            if(builtIn != null)
+                return builtIn + ((nullable != null) ? "?" : "");
+
+            return null;
+        }
+
+        private string builtInType(TypeCode typeCode)
+        {
+            switch(typeCode)
+            {
+                case TypeCode.Boolean:  return "bool";
+                case TypeCode.Char:     return "char";
+                case TypeCode.SByte:    return "sbyte";
+                case TypeCode.Byte:     return "byte";
+                case TypeCode.Int16:    return "short";
+                case TypeCode.UInt16:   return "ushort";
+                case TypeCode.Int32:    return "int";
+                case TypeCode.UInt32:   return "uint";
+                case TypeCode.Int64:    return "long";
+                case TypeCode.UInt64:   return "ulong";
+                case TypeCode.Single:   return "float";
+                case TypeCode.Double:   return "double";
+                case TypeCode.Decimal:  return "decimal";
+                case TypeCode.DateTime: return "DateTime";
+            }
+            return null;
         }
 
         public bool CanMake(Type type)

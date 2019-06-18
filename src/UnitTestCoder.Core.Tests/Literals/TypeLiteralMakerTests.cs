@@ -23,7 +23,7 @@ namespace UnitTestCoder.Core.Tests.Literals
         {
             var arg = typeof(string);
 
-            _typeLiteralMaker.Literal(arg).ShouldBe("typeof(System.String)");
+            _typeLiteralMaker.Literal(arg).ShouldBe("typeof(string)");
         }
 
         [TestMethod]
@@ -75,7 +75,7 @@ namespace UnitTestCoder.Core.Tests.Literals
         {
             var arg = typeof(List<string>);
 
-            _typeLiteralMaker.Literal(arg).ShouldBe("typeof(System.Collections.Generic.List<System.String>)");
+            _typeLiteralMaker.Literal(arg).ShouldBe("typeof(System.Collections.Generic.List<string>)");
         }
     }
 }

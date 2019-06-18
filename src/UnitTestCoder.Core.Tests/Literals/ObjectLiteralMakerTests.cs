@@ -66,7 +66,7 @@ namespace UnitTestCoder.Core.Tests.Literals
                     "B",
                 });
 
-            result.ShouldBe(normalise(@"new List<String>() { ""A"", ""B"", }"));
+            result.ShouldBe(normalise(@"new List<string>() { ""A"", ""B"", }"));
         }
 
         [TestMethod]
@@ -214,7 +214,7 @@ namespace UnitTestCoder.Core.Tests.Literals
             var m = typeof(string);
 
             var result = makeObjectLiteral(m);
-            result.ShouldBe("typeof(System.String)");
+            result.ShouldBe("typeof(string)");
         }
 
         [TestMethod]
@@ -223,7 +223,7 @@ namespace UnitTestCoder.Core.Tests.Literals
             var pq = new TypeofObject() { T = typeof(string) };
 
             var result = makeObjectLiteral(pq);
-            result.ShouldBe("new TypeofObject() { T = typeof(System.String), }");
+            result.ShouldBe("new TypeofObject() { T = typeof(string), }");
         }
 
         [TestMethod]
