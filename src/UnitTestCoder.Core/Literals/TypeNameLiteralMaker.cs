@@ -17,6 +17,7 @@ namespace UnitTestCoder.Core.Literal
             return getNestedTypeName(type, fullyQualify, 0);
         }
 
+
         private string getNestedTypeName(Type type, bool fullyQualify, int depth)
         {
             if(depth > 50)
@@ -25,10 +26,19 @@ namespace UnitTestCoder.Core.Literal
             var parts = new List<string>();
             while(type != null)
             {
-                parts.Add(getFullTypeName(type, fullyQualify, depth + 1));
+                parts.Add(getFullTypeName(type, fullyQualify, depth: depth + 1));
+
+                // Generic parameters e.g. T have the DeclaringType as the type they are part of
+                // so we must exit to avoid infinite loop.
+                if(type.IsGenericParameter)
+                    break;
+
+                // Reached the end of the nesting.
+                if(!type.IsNested)
+                    break;
 
                 // Get the parent type or null if there is no class nesting
-                type = type.IsNested ? type.DeclaringType : null;
+                type = type.DeclaringType;
             }
 
             // Results are in inner to outer order, reverse so we get Parent.Child.Grandchild
@@ -43,34 +53,90 @@ namespace UnitTestCoder.Core.Literal
         /// <returns></returns>
         private string getFullTypeName(Type type, bool fullyQualify, int depth)
         {
+            // If this is a generic parameter (e.g. the T in List<T>) we should return an empty string
+            // This is so we get an open generic type like typeof(IDictionary<,>)
+            if(type.IsGenericParameter)
+                return "";
+
+            if(type.IsArray)
+            {
+                // Create [] for 1d array, [,] for 2d array and so on.
+                string indexer =
+                    "["
+                    + new string(',', (type.GetArrayRank() - 1))
+                    + "]";
+
+                return getNestedTypeName(type.GetElementType(), fullyQualify, depth + 1) 
+                    + indexer;
+            }
+
+            // Simple type like int, string, nullable int etc?
+            string simple = simpleTypeName(type);
+            if(simple != null)
+                return simple;
+
+
             string typeName = fullyQualify && !type.IsNested ? type.FullName : type.Name;
 
+            // Non-generics, return the type name.
             if(!type.IsGenericType)
                 return typeName;
 
-            StringBuilder sb = new StringBuilder();
+            // We will have something like List`T - we want the text before the backtick.
+            string baseName = typeName.Substring(0, typeName.LastIndexOf("`"));
 
-            sb.Append(typeName.Substring(0, typeName.LastIndexOf("`")));
-            sb.Append(type.GetGenericArguments().Aggregate("<",
+            var genericArgs = String.Join(",", type.GetGenericArguments()
+                .Select(g => getNestedTypeName(g, fullyQualify, depth + 1)));
 
-                delegate (string aggregate, Type t)
-                {
-                    return aggregate + (aggregate == "<" ? "" : ",") + getNestedTypeName(t, fullyQualify, depth + 1);
-                }
-                ));
-            sb.Append(">");
+            return $"{baseName}<{genericArgs}>";
+        }
 
-            return sb.ToString();
+        
+        private string simpleTypeName(Type type)
+        {
+            if(type == typeof(string))
+                return "string";
+
+            if(type == typeof(object))
+                return "object";
+
+            var nullable = Nullable.GetUnderlyingType(type);
+            var root = nullable ?? type;
+
+            var builtIn = builtInType(Type.GetTypeCode(root));
+
+            if(builtIn != null)
+                return builtIn + ((nullable != null) ? "?" : "");
+
+            return null;
+        }
+
+        private string builtInType(TypeCode typeCode)
+        {
+            switch(typeCode)
+            {
+                case TypeCode.Boolean:  return "bool";
+                case TypeCode.Char:     return "char";
+                case TypeCode.SByte:    return "sbyte";
+                case TypeCode.Byte:     return "byte";
+                case TypeCode.Int16:    return "short";
+                case TypeCode.UInt16:   return "ushort";
+                case TypeCode.Int32:    return "int";
+                case TypeCode.UInt32:   return "uint";
+                case TypeCode.Int64:    return "long";
+                case TypeCode.UInt64:   return "ulong";
+                case TypeCode.Single:   return "float";
+                case TypeCode.Double:   return "double";
+                case TypeCode.Decimal:  return "decimal";
+                case TypeCode.DateTime: return "DateTime";
+            }
+            return null;
         }
 
         public bool CanMake(Type type)
         {
             if(type == null)
                 throw new NullReferenceException(nameof(type));
-
-            // Can't do typeof(List<T>) (how would you define T?)
-            if(type.ContainsGenericParameters)
-                return false;
 
             // Can't do anonymous types
             var compilerGenerated = type.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false);

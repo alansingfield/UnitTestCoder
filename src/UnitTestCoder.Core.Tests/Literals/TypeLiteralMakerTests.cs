@@ -23,11 +23,11 @@ namespace UnitTestCoder.Core.Tests.Literals
         {
             var arg = typeof(string);
 
-            _typeLiteralMaker.Literal(arg).ShouldBe("typeof(System.String)");
+            _typeLiteralMaker.Literal(arg).ShouldBe("typeof(string)");
         }
 
         [TestMethod]
-        public void ValueLiteralMakerSubType()
+        public void TypeLiteralMakerSubType()
         {
             var arg = typeof(System.Globalization.Calendar);
 
@@ -35,18 +35,47 @@ namespace UnitTestCoder.Core.Tests.Literals
         }
 
         [TestMethod]
-        public void ValueLiteralMakerNestedType()
+        public void TypeLiteralMakerNestedType()
         {
             var arg = typeof(Nested.Subclass);
 
             _typeLiteralMaker.Literal(arg).ShouldBe("typeof(UnitTestCoder.Core.Tests.Literals.TypeLiteralMakerTests.Nested.Subclass)");
         }
 
+        [TestMethod]
+        public void TypeLiteralMakerNestedGenericType()
+        {
+            var arg = typeof(Nested.GenericSub<>);
+
+            _typeLiteralMaker.Literal(arg).ShouldBe("typeof(UnitTestCoder.Core.Tests.Literals.TypeLiteralMakerTests.Nested.GenericSub<>)");
+        }
+
+
         public partial class Nested
         {
             public class Subclass
             {
             }
+
+            public class GenericSub<T>
+            {
+            }
+        }
+
+        [TestMethod]
+        public void TypeLiteralMakerGenericOpenConstructed()
+        {
+            var arg = typeof(IDictionary<,>);
+
+            _typeLiteralMaker.Literal(arg).ShouldBe("typeof(System.Collections.Generic.IDictionary<,>)");
+        }
+
+        [TestMethod]
+        public void TypeLiteralMakerGenericClosedConstructed()
+        {
+            var arg = typeof(List<string>);
+
+            _typeLiteralMaker.Literal(arg).ShouldBe("typeof(System.Collections.Generic.List<string>)");
         }
     }
 }

@@ -381,7 +381,7 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
             x.ShouldBe(new[]
             {
                 "myObj.ShouldNotBeNull();",
-                "myObj.StringType.ShouldBe(typeof(System.String));"
+                "myObj.StringType.ShouldBe(typeof(string));"
             });
         }
 
