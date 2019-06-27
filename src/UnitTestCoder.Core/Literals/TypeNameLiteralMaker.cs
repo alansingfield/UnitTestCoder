@@ -39,11 +39,11 @@ namespace UnitTestCoder.Core.Literal
             int nestCount = 0;
             while(type != null)
             {
+                // Limit nesting
                 nestCount++;
                 if(nestCount > 50)
                     throw new StackOverflowException();
 
-                // TODO - limit nesting!!!
                 nestings.Add(type);
 
                 // Generic parameters e.g. T have the DeclaringType as the type they are part of
