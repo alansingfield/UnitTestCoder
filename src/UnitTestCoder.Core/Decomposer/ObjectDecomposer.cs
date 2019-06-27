@@ -149,6 +149,11 @@ namespace UnitTestCoder.Core.Decomposer
                                     continue;
 
                                 var getMethod = prop.GetGetMethod();
+
+                                // We can't do anything with parameterised calls e.g. .Item[int32]
+                                if(getMethod.GetParameters().Length > 0)
+                                    continue;
+
                                 object val = getMethod.Invoke(arg, null);
 
                                 string newLValue = $"{lvalue}.{propertyName}";

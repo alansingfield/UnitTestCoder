@@ -199,6 +199,21 @@ namespace UnitTestCoder.Core.Tests.Literals
         }
 
         [TestMethod]
+        public void ObjectLiteralMakerSkipItemProperty()
+        {
+            var pq = new WithItemProperty() { Other = 123 };
+
+            var result = makeObjectLiteral(pq);
+            result.ShouldBe("new ObjectLiteralMakerTests.WithItemProperty() { Other = 123, }");
+        }
+
+        private class WithItemProperty // NOT defined as IEnumerable / IList
+        {
+            public int this[int x] { get => 99; set { } }
+            public int Other { get; set; }
+        }
+
+        [TestMethod]
         public void ObjectLiteralMakerNoFollow()
         {
             var m = new ObjectABC() { A = 1, B = 2, C = 3 };

@@ -425,6 +425,25 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
             });
         }
 
+        [TestMethod]
+        public void ShouldlyTestMakerSkipItemProperty()
+        {
+            var myObj = new WithItemProperty() { Other = 123 };
+
+            var x = _shouldlyTestMaker.GenerateShouldBes("myObj", myObj).ToList();
+            x.ShouldBe(new[]
+            {
+                "myObj.ShouldNotBeNull();",
+                "myObj.Other.ShouldBe(123);"
+            });
+        }
+
+        private class WithItemProperty // NOT defined as IEnumerable / IList
+        {
+            public int this[int x] { get => 99; set { } }
+            public int Other { get; set; }
+        }
+
         public class NoFollowTestClass
         {
             public int IncludeThis { get; set; }

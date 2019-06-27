@@ -121,17 +121,22 @@ namespace UnitTestCoder.Core.Literal
                             {
                                 // Read the current value of the property
                                 var getMethod = prop.GetGetMethod();
-                                object val = getMethod.Invoke(arg, null);
 
-                                yield return space();
-
-                                yield return $"{name} = ";
-
-                                foreach(var result in objLiteral(val, nesting, noFollowFunc, seenObjects))
+                                // We can't do anything with parameterised calls e.g. .Item[int32]
+                                if(getMethod.GetParameters().Length == 0)
                                 {
-                                    yield return result;
+                                    object val = getMethod.Invoke(arg, null);
+
+                                    yield return space();
+
+                                    yield return $"{name} = ";
+
+                                    foreach(var result in objLiteral(val, nesting, noFollowFunc, seenObjects))
+                                    {
+                                        yield return result;
+                                    }
+                                    yield return ",\r\n";
                                 }
-                                yield return ",\r\n";
                             }
                         }
 
