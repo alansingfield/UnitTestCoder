@@ -45,9 +45,38 @@ namespace UnitTestCoder.Core.Tests.Literals
         [TestMethod]
         public void TypeLiteralMakerNestedGenericType()
         {
-            var arg = typeof(Nested.GenericSub<>);
+            var arg = typeof(UnitTestCoder.Core.Tests.Literals.TypeLiteralMakerTests.Nested.GenericSub<>);
 
-            _typeLiteralMaker.Literal(arg).ShouldBe("typeof(UnitTestCoder.Core.Tests.Literals.TypeLiteralMakerTests.Nested.GenericSub<>)");
+            _typeLiteralMaker.Literal(arg).ShouldBe(
+                "typeof(UnitTestCoder.Core.Tests.Literals.TypeLiteralMakerTests.Nested.GenericSub<>)");
+        }
+
+        [TestMethod]
+        public void TypeLiteralMakerNestedSubWithinGeneric()
+        {
+            var arg = typeof(UnitTestCoder.Core.Tests.Literals.TypeLiteralMakerTests.Nested.GenericSub<>.SubWithinGeneric);
+
+            _typeLiteralMaker.Literal(arg).ShouldBe(
+                "typeof(UnitTestCoder.Core.Tests.Literals.TypeLiteralMakerTests.Nested.GenericSub<>.SubWithinGeneric)");
+        }
+
+        [TestMethod]
+        public void TypeLiteralMakerNestedGenericWithinGeneric()
+        {
+            var arg = typeof(UnitTestCoder.Core.Tests.Literals.TypeLiteralMakerTests.Nested.GenericSub<>.GenericWithinGeneric<>);
+
+            _typeLiteralMaker.Literal(arg).ShouldBe(
+                "typeof(UnitTestCoder.Core.Tests.Literals.TypeLiteralMakerTests.Nested.GenericSub<>.GenericWithinGeneric<>)");
+        }
+
+
+        [TestMethod]
+        public void TypeLiteralMakerNestedConstructedGenericWithinGeneric()
+        {
+            var arg = typeof(UnitTestCoder.Core.Tests.Literals.TypeLiteralMakerTests.Nested.GenericSub<int>.GenericWithinGeneric<string>);
+
+            _typeLiteralMaker.Literal(arg).ShouldBe(
+                "typeof(UnitTestCoder.Core.Tests.Literals.TypeLiteralMakerTests.Nested.GenericSub<int>.GenericWithinGeneric<string>)");
         }
 
 
@@ -59,6 +88,9 @@ namespace UnitTestCoder.Core.Tests.Literals
 
             public class GenericSub<T>
             {
+                public class SubWithinGeneric { }
+
+                public class GenericWithinGeneric<T2> { }
             }
         }
 
