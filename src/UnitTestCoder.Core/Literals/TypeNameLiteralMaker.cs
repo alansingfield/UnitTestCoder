@@ -83,7 +83,8 @@ namespace UnitTestCoder.Core.Literal
             Type type,
             Type target,
             bool fullyQualify,
-            bool fqSub, int depth)
+            bool fqSub, 
+            int depth)
         {
             // If this is a generic parameter (e.g. the T in List<T>) we should return an empty string
             // This is so we get an open generic type like typeof(IDictionary<,>)
@@ -110,19 +111,24 @@ namespace UnitTestCoder.Core.Literal
             string typeName = fullyQualify ? type.FullName : type.Name;
 
             // Find which generic arguments are required at this level
-            var gen = getNestedGenericArguments(type, target);
-            if(gen.Count == 0)
+            var genericArgs = getNestedGenericArguments(type, target);
+            if(genericArgs.Count == 0)
                 return typeName;    // not generic.
 
             // We will have something like List`T - we want the text before the backtick.
             string baseName = typeName.Substring(0, typeName.LastIndexOf("`"));
 
             // Recursive call to get the name of each generic parameter.
-            var genericArgs = String.Join(",", gen
-                .Select(g => getNestedTypeName(g, type, fqSub, fqSub, depth + 1)));
+            var genericArgNames = String.Join(",", genericArgs
+                .Select(g => getNestedTypeName(
+                    g,      // The generic arg
+                    type,   // Get the actual generic types from this
+                    fqSub,  // Fully qualify the generic type parameter name
+                    fqSub, 
+                    depth + 1)));
 
             // Produce text like List<string>
-            return $"{baseName}<{genericArgs}>";
+            return $"{baseName}<{genericArgNames}>";
         }
 
         private List<Type> getNestedGenericArguments(Type type, Type target)
@@ -154,9 +160,9 @@ namespace UnitTestCoder.Core.Literal
                 return "object";
 
             var nullable = Nullable.GetUnderlyingType(type);
-            var target = nullable ?? type;
+            var root = nullable ?? type;
 
-            var builtIn = builtInType(Type.GetTypeCode(target));
+            var builtIn = builtInType(Type.GetTypeCode(root));
 
             if(builtIn != null)
                 return builtIn + ((nullable != null) ? "?" : "");

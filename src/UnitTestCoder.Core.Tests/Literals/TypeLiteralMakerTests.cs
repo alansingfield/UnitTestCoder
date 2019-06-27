@@ -79,6 +79,15 @@ namespace UnitTestCoder.Core.Tests.Literals
                 "typeof(UnitTestCoder.Core.Tests.Literals.TypeLiteralMakerTests.Nested.GenericSub<int>.GenericWithinGeneric<string>)");
         }
 
+        [TestMethod]
+        public void TypeLiteralMakerNestedConstructedWithSelf()
+        {
+            var arg = typeof(UnitTestCoder.Core.Tests.Literals.TypeLiteralMakerTests.Nested.GenericSub<UnitTestCoder.Core.Tests.Literals.TypeLiteralMakerTests.Nested.Subclass>.GenericWithinGeneric<string>);
+
+            _typeLiteralMaker.Literal(arg).ShouldBe(
+                "typeof(UnitTestCoder.Core.Tests.Literals.TypeLiteralMakerTests.Nested.GenericSub<UnitTestCoder.Core.Tests.Literals.TypeLiteralMakerTests.Nested.Subclass>.GenericWithinGeneric<string>)");
+        }
+
 
         public partial class Nested
         {
