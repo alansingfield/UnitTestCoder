@@ -14,11 +14,16 @@ namespace UnitTestCoder.Core.Literal
     {
         public string Literal(Type type, bool fullyQualify = false)
         {
-            return getNestedTypeName(type, fullyQualify, fullyQualify, 0);
+            return getNestedTypeName(type, type, fullyQualify, fullyQualify, 0);
         }
 
 
-        private string getNestedTypeName(Type type, bool fullyQualify, bool fqSub, int depth)
+        private string getNestedTypeName(
+            Type type,
+            Type target, 
+            bool fullyQualify, 
+            bool fqSub, 
+            int depth)
         {
             if(type == null)
                 throw new ArgumentNullException(nameof(type));
@@ -30,8 +35,14 @@ namespace UnitTestCoder.Core.Literal
 
             // If it is a nested type, look back through DeclaringType so we can get back to the
             // root type.
+
+            int nestCount = 0;
             while(type != null)
             {
+                nestCount++;
+                if(nestCount > 50)
+                    throw new StackOverflowException();
+
                 // TODO - limit nesting!!!
                 nestings.Add(type);
 
@@ -40,42 +51,23 @@ namespace UnitTestCoder.Core.Literal
                 if(type.IsGenericParameter)
                     break;
 
+                // Go to the declaring type (the parent in the nesting relationship)
                 type = type.DeclaringType;
             }
 
             // Reverse the order so the root type is first.
 
-            var parts = nestings.AsEnumerable().Reverse().Select((x, idx) =>
-                getFullTypeName(x,
-                   fullyQualify: (fullyQualify && idx == 0),  // Only fully qualify first item (outermost type)
-                   fqSub: fullyQualify,     // Sub elements need to be fully qualified?
-                   depth: depth + 1)
-            ).ToList();
-
-            //var parts = new List<string>();
-
-
-            //parts.Add(getFullTypeName(nestings.First(), 
-            //    fullyQualify,
-            //    fqSub: fullyQualify,
-            //    depth: depth + 1));
-            
-            
-
-            //while(type.IsNested)
-            //{
-            //    // Generic parameters e.g. T have the DeclaringType as the type they are part of
-            //    // so we must exit to avoid infinite loop.
-            //    if(type.IsGenericParameter)
-            //        break;
-                
-            //    parts.Add(type.Name);
-
-            //    // Get the parent type or null if there is no class nesting
-            //    type = type.DeclaringType;
-            //}
-
-            //parts.Add(getFullTypeName(type, fullyQualify, depth: depth + 1));
+            var parts = nestings
+                .AsEnumerable()
+                .Reverse()
+                .Select((x, idx) =>
+                    getFullTypeName(
+                        x,
+                        target,
+                        fullyQualify:   (fullyQualify && idx == 0),  // Only fully qualify first item (outermost type)
+                        fqSub:          fullyQualify,     // Sub elements need to be fully qualified?
+                        depth:          depth + 1)
+                ).ToList();
 
 
             return String.Join(".",parts);
@@ -87,12 +79,16 @@ namespace UnitTestCoder.Core.Literal
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
-        private string getFullTypeName(Type type, bool fullyQualify, bool fqSub, int depth)
+        private string getFullTypeName(
+            Type type,
+            Type target,
+            bool fullyQualify,
+            bool fqSub, int depth)
         {
             // If this is a generic parameter (e.g. the T in List<T>) we should return an empty string
             // This is so we get an open generic type like typeof(IDictionary<,>)
-            if(type.IsGenericParameter)
-                return "floop";
+            if(type.IsGenericParameter && !target.IsConstructedGenericType)
+                return "";
 
             if(type.IsArray)
             {
@@ -102,7 +98,7 @@ namespace UnitTestCoder.Core.Literal
                     + new string(',', (type.GetArrayRank() - 1))
                     + "]";
 
-                return getNestedTypeName(type.GetElementType(), fqSub, fqSub, depth + 1) 
+                return getNestedTypeName(type.GetElementType(), target, fqSub, fqSub, depth + 1) 
                     + indexer;
             }
 
@@ -111,36 +107,42 @@ namespace UnitTestCoder.Core.Literal
             if(simple != null)
                 return simple;
 
-
             string typeName = fullyQualify ? type.FullName : type.Name;
 
-            // Non-generics, return the type name.
-            if(!type.IsGenericType)
-                return typeName;
-
-            var gen = getNestedGenericArguments(type);
+            // Find which generic arguments are required at this level
+            var gen = getNestedGenericArguments(type, target);
             if(gen.Count == 0)
-                return typeName;
+                return typeName;    // not generic.
 
             // We will have something like List`T - we want the text before the backtick.
             string baseName = typeName.Substring(0, typeName.LastIndexOf("`"));
 
+            // Recursive call to get the name of each generic parameter.
             var genericArgs = String.Join(",", gen
-                .Select(g => getNestedTypeName(g, fqSub, fqSub, depth + 1)));
+                .Select(g => getNestedTypeName(g, type, fqSub, fqSub, depth + 1)));
 
+            // Produce text like List<string>
             return $"{baseName}<{genericArgs}>";
         }
 
-        private List<Type> getNestedGenericArguments(Type type)
+        private List<Type> getNestedGenericArguments(Type type, Type target)
         {
-            if(!type.IsNested)
-                return type.GetGenericArguments().ToList();
-
             // https://stackoverflow.com/questions/55051292/getting-generic-type-from-the-declaringtype-of-a-nested-type-in-c-sharp-with-ref
-            // For nested types, the generic arguments from the outer class are repeated on the inner.
-            // So we need to skip over these. I'm doing this by position, not sure this is the official
-            // way but it gives the right answer
-            return type.GetGenericArguments().Skip(type.DeclaringType.GetGenericArguments().Length).ToList();
+
+            // GetGenericArguments() needs a bit of a boost for nested constructed generic types
+            // such as Class1<string>.Class2<int>
+            // We need to use the target type to get the resolved type names, but use the positions
+            // within each nesting level.
+
+            // target is: Class1<string>.Class2<int>; this will give us string,int
+            var targetArgs = target.GetGenericArguments();
+
+            // When looking at Class1<> we want to fill in the generic argument with string
+            // When looking at Class2<> we want to fill in the generic argument with int
+            int startIdx = type.DeclaringType?.GetGenericArguments().Length ?? 0;
+            int count = type.GetGenericArguments().Length;
+
+            return targetArgs.Skip(startIdx).Take(count).ToList();
         }
         
         private string simpleTypeName(Type type)
@@ -152,9 +154,9 @@ namespace UnitTestCoder.Core.Literal
                 return "object";
 
             var nullable = Nullable.GetUnderlyingType(type);
-            var root = nullable ?? type;
+            var target = nullable ?? type;
 
-            var builtIn = builtInType(Type.GetTypeCode(root));
+            var builtIn = builtInType(Type.GetTypeCode(target));
 
             if(builtIn != null)
                 return builtIn + ((nullable != null) ? "?" : "");
