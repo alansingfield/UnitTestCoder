@@ -75,7 +75,7 @@ namespace UnitTestCoder.Core.Decomposer
                         // Remember this object in case we see it again.
                         seenObjects.Add(arg, lvalue);
 
-                        if(typeof(IDictionary).IsAssignableFrom(type))
+                        if(arg is IDictionary)
                         {
                             var dict = ((IDictionary)arg);
 
@@ -104,9 +104,7 @@ namespace UnitTestCoder.Core.Decomposer
 
                             yield return dictionaryEnd(lvalue, type, dict.Count);
                         }
-                        else if(typeof(IList).IsAssignableFrom(type)
-                            || typeof(IList<>).IsAssignableFrom(type)
-                            )
+                        else if(arg is IList || typeof(IList<>).IsInstanceOfType(arg))
                         {
                             var list = ((IEnumerable)arg).Cast<object>().ToList();
 
