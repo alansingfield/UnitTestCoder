@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -20,10 +21,16 @@ namespace UnitTestCoder.Core.Tests.Literals
         [TestInitialize]
         public void Init()
         {
+            var indenter = new Indenter();
+            var valueLiteralMaker = new ValueLiteralMaker();
+            var typeNameLiteralMaker = new TypeNameLiteralMaker();
+            var typeLiteralMaker = new TypeLiteralMaker(typeNameLiteralMaker);
+
             _objectLiteralMaker = new ObjectLiteralMaker(
-                new ValueLiteralMaker(),
-                new TypeNameLiteralMaker(),
-                new Indenter());
+                valueLiteralMaker,
+                typeNameLiteralMaker,
+                typeLiteralMaker,
+                indenter);
         }
 
         [TestMethod]
@@ -36,6 +43,39 @@ namespace UnitTestCoder.Core.Tests.Literals
             });
 
             result.ShouldBe(normalise(@"new SimpleObject() { A = 4, B = 5, }"));
+        }
+
+        [TestMethod]
+        public void ObjectLiteralMakerStringArray()
+        {
+            var result = makeObjectLiteral(new string[]
+                {
+                    "A",
+                    "B",
+                });
+
+            result.ShouldBe(normalise(@"new[] { ""A"", ""B"" }"));
+        }
+
+        [TestMethod]
+        public void ObjectLiteralMakerStringList()
+        {
+            var result = makeObjectLiteral(new List<string>()
+                {
+                    "A",
+                    "B",
+                });
+
+            result.ShouldBe(normalise(@"new List<string>() { ""A"", ""B"", }"));
+        }
+
+        [TestMethod]
+        public void ObjectLiteralMakerEmptyString()
+        {
+            var result = makeObjectLiteral(new string[]
+                {});
+
+            result.ShouldBe(normalise(@"new string[0]"));
         }
 
         [TestMethod]
@@ -159,6 +199,21 @@ namespace UnitTestCoder.Core.Tests.Literals
         }
 
         [TestMethod]
+        public void ObjectLiteralMakerSkipItemProperty()
+        {
+            var pq = new WithItemProperty() { Other = 123 };
+
+            var result = makeObjectLiteral(pq);
+            result.ShouldBe("new ObjectLiteralMakerTests.WithItemProperty() { Other = 123, }");
+        }
+
+        private class WithItemProperty // NOT defined as IEnumerable / IList
+        {
+            public int this[int x] { get => 99; set { } }
+            public int Other { get; set; }
+        }
+
+        [TestMethod]
         public void ObjectLiteralMakerNoFollow()
         {
             var m = new ObjectABC() { A = 1, B = 2, C = 3 };
@@ -166,6 +221,42 @@ namespace UnitTestCoder.Core.Tests.Literals
             var result = makeObjectLiteral(m, noFollowFunc: x => x.Name == "B" && x.DeclaringType == typeof(ObjectABC));
 
             result.ShouldBe("new ObjectABC() { A = 1, C = 3, }");
+        }
+
+        [TestMethod]
+        public void ObjectLiteralMakerTypeof()
+        {
+            var m = typeof(string);
+
+            var result = makeObjectLiteral(m);
+            result.ShouldBe("typeof(string)");
+        }
+
+        [TestMethod]
+        public void ObjectLiteralMakerTypeofObject()
+        {
+            var pq = new TypeofObject() { T = typeof(string) };
+
+            var result = makeObjectLiteral(pq);
+            result.ShouldBe("new TypeofObject() { T = typeof(string), }");
+        }
+
+        [TestMethod]
+        public void ObjectLiteralMakerTypeofInvalid()
+        {
+            var corelib = Assembly.GetAssembly(typeof(string));
+
+            // Find a private, non-anonymous type somewhere in mscorlib.
+            // This should generate a commented-out typename.
+            Type privateType = corelib.DefinedTypes.First(
+                x => x.IsNotPublic
+                && !x.GetCustomAttributes<CompilerGeneratedAttribute>().Any()
+                && x.Namespace != null);
+
+            var pq = new TypeofObject() { T = privateType };
+
+            var result = makeObjectLiteral(pq);
+            result.ShouldBe("new TypeofObject() { T = typeof(/*FxResources.System.Private.CoreLib.SR*/), }");
         }
 
         private string makeObjectLiteral(object arg, Func<PropertyInfo, bool> noFollowFunc = null)
@@ -215,5 +306,10 @@ namespace UnitTestCoder.Core.Tests.Literals
     {
         public int P { get; set; }
         public int Q => P + 1;
+    }
+
+    public class TypeofObject
+    {
+        public Type T { get; set; }
     }
 }

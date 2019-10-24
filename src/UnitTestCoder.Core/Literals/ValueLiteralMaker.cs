@@ -16,90 +16,167 @@ namespace UnitTestCoder.Core.Literal
 
             var type = arg.GetType();
 
-            if(type == typeof(string))
+            switch(arg)
             {
-                string s = (string)arg;
-                if(s.Contains(@"""") || s.Contains(@"\"))
-                    return $@"@""{s.Replace(@"""", @"""""")}""";
+                case string x:      return stringLiteral(x);
 
-                return $@"""{stringEscape(s)}""";
+                case int x:         return $"{x}";
+                case uint x:        return $"{x}u";
+                case long x:        return $"{x}L";
+                case ulong x:       return $"{x}ul";
+
+                case short x:       return $"{x}";
+                case ushort x:      return $"{x}";
+                case byte x:        return $"{x}";
+                case sbyte x:       return $"{x}";
+
+                case decimal x:     return $"{x.ToString(CultureInfo.InvariantCulture)}m";
+                case double x:      return doubleLiteral(x);
+                case float x:       return floatLiteral(x);
+
+                case DateTime x:    return $@"DateTime.Parse(""{x.ToString("O")}"")";
+                case TimeSpan x:    return $@"TimeSpan.Parse(""{x.ToString("g",
+                                                CultureInfo.InvariantCulture)}"")";
+
+                case bool x:        return x ? "true" : "false";
+                case Guid x:        return $@"Guid.Parse(""{x}"")";
+                case Enum x:        return enumLiteral(x, type);
+
+                case byte[] x:      return byteArrayLiteral(x);
+                case string[] x:    return stringArrayLiteral(x);
             }
 
-            if(type == typeof(int) || type == (typeof(int?)))
+            throw new Exception($"Unexpected data type {type}");
+        }
+
+        public bool CanMake(Type type)
+        {
+            Type t = Nullable.GetUnderlyingType(type) ?? type;
+
+            return (
+                   t == typeof(string)
+
+                || t == typeof(int)
+                || t == typeof(uint)
+                || t == typeof(long)
+                || t == typeof(ulong)
+
+                || t == typeof(short)
+                || t == typeof(ushort)
+                || t == typeof(byte)
+                || t == typeof(sbyte)
+
+                || t == typeof(decimal)
+                || t == typeof(double)
+                || t == typeof(float)
+
+                || t == typeof(DateTime)
+                || t == typeof(TimeSpan)
+
+                || t == typeof(bool)
+                || t == typeof(Guid)
+                || t.IsEnum
+
+                || t == typeof(byte[])
+                || t == typeof(string[])
+              );
+        }
+
+        private string doubleLiteral(double x)
+        {
+            // Values very close to Double.MaxValue / MinValue are not compilable
+            // as G15 rounded literals because the rounding sends them higher than
+            // the maximum / lower than the minimum. It's clearer to write MinValue
+            // and MaxValue anyway...
+            switch(x)
             {
-                return arg.ToString();
+                case double.MaxValue: return "double.MaxValue";
+                case double.MinValue: return "double.MinValue";
+                default: return $"{x.ToString(CultureInfo.InvariantCulture)}d";
             }
+        }
 
-            if(type == typeof(decimal) || type == (typeof(decimal?)))
+        private string floatLiteral(float x)
+        {
+            switch(x)
             {
-                return $"{((decimal)arg).ToString(CultureInfo.InvariantCulture)}m";
+                case float.MaxValue: return "float.MaxValue";
+                case float.MinValue: return "float.MinValue";
+                default: return $"{x.ToString(CultureInfo.InvariantCulture)}f";
             }
+        }
 
-            if(type == typeof(double) || type == (typeof(double?)))
+        private static string enumLiteral(object arg, Type type)
+        {
+            // If enum is in a nested class use dot notation not plus.
+            string typeFullName = type.FullName.Replace("+", ".");
+
+            return $"{typeFullName}.{Enum.GetName(type, arg)}";
+        }
+
+        private string stringLiteral(string arg)
+        {
+            string s = (string)arg;
+            if(s.Contains(@"""") || s.Contains(@"\"))
+                return $@"@""{s.Replace(@"""", @"""""")}""";
+
+            return $@"""{stringEscape(s)}""";
+        }
+
+        private string byteArrayLiteral(byte[] arg)
+        {
+            int len = arg.Length;
+
+            bool useLineBreaks = len > 16;
+
+            string separator(int index)
             {
-                return $"{((double)arg).ToString(CultureInfo.InvariantCulture)}d";
-            }
-
-            if(type == typeof(DateTime) || type == (typeof(DateTime?)))
-            {
-                return $@"DateTime.Parse(""{((DateTime)arg).ToString("O")}"")";
-            }
-
-            if(type == typeof(TimeSpan) || type == (typeof(TimeSpan?)))
-            {
-                return $@"TimeSpan.Parse(""{((TimeSpan)arg).ToString("g", CultureInfo.InvariantCulture)}"")";
-            }
-
-            if(type == typeof(bool) || type == (typeof(bool?)))
-            {
-                return ((bool)arg) ? "true" : "false";
-            }
-
-            if(type == typeof(Guid) || type == (typeof(Guid?)))
-            {
-                return $@"Guid.Parse(""{arg}"")";
-            }
-
-            if(type == typeof(byte[]))
-            {
-                byte[] bytes = (byte[])arg;
-
-                // new byte[] { 0x01, 0x04 }
-
-                int len = bytes.Length;
-
-                bool useLineBreaks = len > 16;
-
-                string separator(int index)
-                {
-                    if(!useLineBreaks)
-                        return " ";
-
-                    if(index == len - 1)    // Last item always gets a line break.
-                        return "\r\n";
-
-                    if(index % 16 == 15)
-                        return "\r\n";
-
+                if(!useLineBreaks)
                     return " ";
-                }
 
-                return "new byte[] {"
-                    + (useLineBreaks ? "\r\n" : " ")
-                    + String.Join("",
-                        bytes.Select((x, i) => $"0x{x:X2},{(separator(i))}"))
-                    + "}";
+                if(index == len - 1)    // Last item always gets a line break.
+                    return "\r\n";
+
+                if(index % 16 == 15)
+                    return "\r\n";
+
+                return " ";
             }
 
-            if(type.IsEnum)
+            return "new byte[] {"
+                + (useLineBreaks ? "\r\n" : " ")
+                + String.Join("",
+                    arg.Select((x, i) => $"0x{x:X2},{(separator(i))}"))
+                + "}";
+        }
+
+        private string stringArrayLiteral(object arg)
+        {
+            var array = (string[])arg;
+
+            if(array.Length == 0)
+                return "new string[0]";
+
+            var literals = array.Select(x => stringLiteral(x)).ToList();
+
+            // Use line breaks if result would be over 80 chars
+            int totalLen = 0;
+            bool useLineBreaks = false;
+            foreach(var l in literals)
             {
-                // If enum is in a nested class use dot notation not plus.
-                string typeFullName = type.FullName.Replace("+", ".");
-
-                return $"{typeFullName}.{Enum.GetName(type, arg)}";
+                totalLen += l.Length;
+                if(totalLen > 80)
+                {
+                    useLineBreaks = true;
+                    break;
+                }
             }
 
-            throw new Exception("Unexpected data type");
+            return "new[] {"
+                + (useLineBreaks ? "\r\n" : " ")
+                + String.Join(useLineBreaks ? ",\r\n" : ", ", literals)
+                + (useLineBreaks ? ",\r\n" : " ")
+                + "}";
         }
 
         private string stringEscape(string arg)
@@ -111,5 +188,7 @@ namespace UnitTestCoder.Core.Literal
 
             return arg;
         }
+
+
     }
 }

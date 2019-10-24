@@ -11,10 +11,12 @@ namespace UnitTestCoder.Core.Decomposer
     public class ObjectDecomposer : IObjectDecomposer
     {
         private readonly IValueLiteralMaker valueLiteralMaker;
+        private readonly ITypeLiteralMaker typeLiteralMaker;
 
-        public ObjectDecomposer(IValueLiteralMaker valueLiteralMaker)
+        public ObjectDecomposer(IValueLiteralMaker valueLiteralMaker, ITypeLiteralMaker typeLiteralMaker)
         {
             this.valueLiteralMaker = valueLiteralMaker;
+            this.typeLiteralMaker = typeLiteralMaker;
         }
         
         public IEnumerable<IBlock> Decompose<T>(
@@ -41,17 +43,24 @@ namespace UnitTestCoder.Core.Decomposer
 
             if(arg == null)
             {
-                yield return literal(lvalue, "null"); // $"{lvalue}.ShouldBeNull();";
+                yield return literal(lvalue, "null", null); // $"{lvalue}.ShouldBeNull();";
             }
             else
             {
                 var instanceType = arg.GetType();
                 var type = declaredType;
 
-                if(type.IsValueType || type == typeof(string) || type == typeof(byte[]))
+                if(arg is Type)
+                {
+                    if(typeLiteralMaker.CanMake((Type)arg))
+                    {
+                        yield return typeBlock(lvalue, typeLiteralMaker.Literal((Type)arg), arg);
+                    }
+                }
+                else if(valueLiteralMaker.CanMake(type))
                 {
                     string rvalue = valueLiteralMaker.Literal(arg);
-                    yield return literal(lvalue, rvalue);// $"{lvalue}.ShouldBe({rvalue});";
+                    yield return literal(lvalue, rvalue, arg);// $"{lvalue}.ShouldBe({rvalue});";
                 }
                 else
                 {
@@ -66,7 +75,7 @@ namespace UnitTestCoder.Core.Decomposer
                         // Remember this object in case we see it again.
                         seenObjects.Add(arg, lvalue);
 
-                        if(typeof(IDictionary).IsAssignableFrom(type))
+                        if(arg is IDictionary)
                         {
                             var dict = ((IDictionary)arg);
 
@@ -95,11 +104,11 @@ namespace UnitTestCoder.Core.Decomposer
 
                             yield return dictionaryEnd(lvalue, type, dict.Count);
                         }
-                        else if(typeof(IEnumerable).IsAssignableFrom(type))
+                        else if(arg is IList || typeof(IList<>).IsInstanceOfType(arg))
                         {
                             var list = ((IEnumerable)arg).Cast<object>().ToList();
 
-                            yield return arrayStart(lvalue, type, list.Count);                       //$"{lvalue}.ShouldNotBeNull();";
+                            yield return arrayStart(lvalue, type, list.Count, arg);                  //$"{lvalue}.ShouldNotBeNull();";
                                                                                                      //yield return $"{lvalue}.Count().ShouldBe({list.Count()});";
 
                             var elementType = getElementType(declaredType);
@@ -124,11 +133,11 @@ namespace UnitTestCoder.Core.Decomposer
                                 idx++;
                             }
 
-                            yield return arrayEnd(lvalue, type, list.Count);
+                            yield return arrayEnd(lvalue, type, list.Count, arg);
                         }
                         else
                         {
-                            yield return objectStart(lvalue, type);
+                            yield return objectStart(lvalue, type, arg);
 
                             var props = type.GetProperties().ToDictionary(propertyInfo => propertyInfo.Name);
 
@@ -140,6 +149,11 @@ namespace UnitTestCoder.Core.Decomposer
                                     continue;
 
                                 var getMethod = prop.GetGetMethod();
+
+                                // We can't do anything with parameterised calls e.g. .Item[int32]
+                                if(getMethod.GetParameters().Length > 0)
+                                    continue;
+
                                 object val = getMethod.Invoke(arg, null);
 
                                 string newLValue = $"{lvalue}.{propertyName}";
@@ -158,20 +172,32 @@ namespace UnitTestCoder.Core.Decomposer
                                 }
                             }
 
-                            yield return objectEnd(lvalue, type);
+                            yield return objectEnd(lvalue, type, arg);
                         }
                     }
                 }
             }
         }
 
-        private IBlock literal(string lvalue, string rvalue)
+        private IBlock literal(string lvalue, string rvalue, object rawValue)
         {
             return new Block()
             {
                 LValue = lvalue,
                 RValue = rvalue,
+                RawValue = rawValue,
                 BlockType = BlockTypeEnum.Literal
+            };
+        }
+
+        private IBlock typeBlock(string lvalue, string rvalue, object rawValue)
+        {
+            return new Block()
+            {
+                LValue = lvalue,
+                RValue = rvalue,
+                RawValue = rawValue,
+                BlockType = BlockTypeEnum.Type
             };
         }
 
@@ -185,24 +211,26 @@ namespace UnitTestCoder.Core.Decomposer
             };
         }
 
-        private IBlock arrayStart(string lvalue, Type dataType, int count)
+        private IBlock arrayStart(string lvalue, Type dataType, int count, object rawValue)
         {
             return new Block()
             {
                 LValue = lvalue,
                 Count = count,
                 DataType = dataType,
-                BlockType = BlockTypeEnum.ArrayStart
+                BlockType = BlockTypeEnum.ArrayStart,
+                RawValue = rawValue
             };
         }
-        private IBlock arrayEnd(string lvalue, Type dataType, int count)
+        private IBlock arrayEnd(string lvalue, Type dataType, int count, object rawValue)
         {
             return new Block()
             {
                 LValue = lvalue,
                 Count = count,
                 DataType = dataType,
-                BlockType = BlockTypeEnum.ArrayEnd
+                BlockType = BlockTypeEnum.ArrayEnd,
+                RawValue = rawValue
             };
         }
 
@@ -228,22 +256,24 @@ namespace UnitTestCoder.Core.Decomposer
             };
         }
 
-        private IBlock objectStart(string lvalue, Type dataType)
+        private IBlock objectStart(string lvalue, Type dataType, object rawValue)
         {
             return new Block()
             {
                 LValue = lvalue,
                 DataType = dataType,
-                BlockType = BlockTypeEnum.ObjectStart
+                BlockType = BlockTypeEnum.ObjectStart,
+                RawValue = rawValue
             };
         }
-        private IBlock objectEnd(string lvalue, Type dataType)
+        private IBlock objectEnd(string lvalue, Type dataType, object rawValue)
         {
             return new Block()
             {
                 LValue = lvalue,
                 DataType = dataType,
-                BlockType = BlockTypeEnum.ObjectEnd
+                BlockType = BlockTypeEnum.ObjectEnd,
+                RawValue = rawValue
             };
         }
 
@@ -264,7 +294,9 @@ namespace UnitTestCoder.Core.Decomposer
                                     .Where(t => t.IsGenericType &&
                                            t.GetGenericTypeDefinition() == typeof(IEnumerable<>))
                                     .Select(t => t.GenericTypeArguments[0]).FirstOrDefault();
-            return enumType ?? type;
+
+            // Can't get anything more specific, just return object.
+            return enumType ?? typeof(object);
         }
 
         private Type getDictionaryElementType(Type type)
@@ -276,7 +308,9 @@ namespace UnitTestCoder.Core.Decomposer
                                     .Where(t => t.IsGenericType &&
                                            t.GetGenericTypeDefinition() == typeof(IDictionary<,>))
                                     .Select(t => t.GenericTypeArguments[1]).FirstOrDefault();
-            return enumType ?? type;
+
+            // Can't get anything more specific, just return object.
+            return enumType ?? typeof(object);
         }
 
     }

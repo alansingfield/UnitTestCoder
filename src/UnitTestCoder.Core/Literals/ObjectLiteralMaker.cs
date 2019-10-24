@@ -15,15 +15,18 @@ namespace UnitTestCoder.Core.Literal
     {
         private readonly IValueLiteralMaker valueLiteralMaker;
         private readonly ITypeNameLiteralMaker typeNameLiteralMaker;
+        private readonly ITypeLiteralMaker typeLiteralMaker;
         private readonly IIndenter indenter;
 
         public ObjectLiteralMaker(
             IValueLiteralMaker valueLiteralMaker,
             ITypeNameLiteralMaker typeNameLiteralMaker,
+            ITypeLiteralMaker typeLiteralMaker,
             IIndenter indenter)
         {
             this.valueLiteralMaker = valueLiteralMaker;
             this.typeNameLiteralMaker = typeNameLiteralMaker;
+            this.typeLiteralMaker = typeLiteralMaker;
             this.indenter = indenter;
         }
 
@@ -48,14 +51,20 @@ namespace UnitTestCoder.Core.Literal
             else
             {
                 var type = arg.GetType();
-                string typename = getFullTypeName(type);
 
-                if(type.IsValueType || type == typeof(string))
+                if(arg is Type)
+                {
+                    yield return typeLiteral((Type)arg);
+
+                }
+                else if(valueLiteralMaker.CanMake(type))
                 {
                     yield return literal(arg);
                 }
                 else
                 {
+                    string typename = getFullTypeName(type);
+
                     // Check for circular reference
                     if(seenObjects.Contains(arg))
                         throw new Exception($"Circular reference detected for object of type '{typename}'");
@@ -112,17 +121,22 @@ namespace UnitTestCoder.Core.Literal
                             {
                                 // Read the current value of the property
                                 var getMethod = prop.GetGetMethod();
-                                object val = getMethod.Invoke(arg, null);
 
-                                yield return space();
-
-                                yield return $"{name} = ";
-
-                                foreach(var result in objLiteral(val, nesting, noFollowFunc, seenObjects))
+                                // We can't do anything with parameterised calls e.g. .Item[int32]
+                                if(getMethod.GetParameters().Length == 0)
                                 {
-                                    yield return result;
+                                    object val = getMethod.Invoke(arg, null);
+
+                                    yield return space();
+
+                                    yield return $"{name} = ";
+
+                                    foreach(var result in objLiteral(val, nesting, noFollowFunc, seenObjects))
+                                    {
+                                        yield return result;
+                                    }
+                                    yield return ",\r\n";
                                 }
-                                yield return ",\r\n";
                             }
                         }
 
@@ -144,6 +158,14 @@ namespace UnitTestCoder.Core.Literal
         private string getFullTypeName(Type t)
         {
             return typeNameLiteralMaker.Literal(t);
+        }
+
+        private string typeLiteral(Type t)
+        {
+            if(typeLiteralMaker.CanMake(t))
+                return typeLiteralMaker.Literal(t);
+            else
+                return $"typeof(/*{t}*/)";
         }
     }
 }

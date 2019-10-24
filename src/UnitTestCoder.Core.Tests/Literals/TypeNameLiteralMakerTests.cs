@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using UnitTestCoder.Core.Literal;
@@ -39,6 +42,129 @@ namespace UnitTestCoder.Core.Tests.Literals
             _typeNameLiteralMaker
                 .Literal(typeof(List<NormalClass.NestedClass>))
                 .ShouldBe("List<NormalClass.NestedClass>");
+        }
+
+        [TestMethod]
+        public void TypeNameLiteralFullNormalClass()
+        {
+            _typeNameLiteralMaker
+                .Literal(typeof(NormalClass), fullyQualify:true)
+                .ShouldBe("UnitTestCoder.Core.Tests.Literals.NormalClass");
+        }
+
+        [TestMethod]
+        public void TypeNameLiteralFullNestedClass()
+        {
+            _typeNameLiteralMaker
+                .Literal(typeof(NormalClass.NestedClass), fullyQualify: true)
+                .ShouldBe("UnitTestCoder.Core.Tests.Literals.NormalClass.NestedClass");
+        }
+
+        [TestMethod]
+        public void TypeNameLiteralFullNestedClassInList()
+        {
+            _typeNameLiteralMaker
+                .Literal(typeof(List<NormalClass.NestedClass>), fullyQualify: true)
+                .ShouldBe("System.Collections.Generic.List<UnitTestCoder.Core.Tests.Literals.NormalClass.NestedClass>");
+        }
+
+
+        [TestMethod]
+        public void TypeNameLiteralCannotMakeAnonymousType()
+        {
+            var p = new { A = 123 };
+
+            _typeNameLiteralMaker
+                .CanMake(p.GetType())
+                .ShouldBe(false);
+        }
+
+        [TestMethod]
+        public void TypeNameLiteralCannotMakePrivateNestedType()
+        {
+            var x = typeof(PrivateClass);
+
+            _typeNameLiteralMaker
+                .CanMake(x)
+                .ShouldBe(false);
+        }
+
+        private class PrivateClass
+        {
+            public int B { get; set; }
+        }
+
+
+        [TestMethod]
+        public void TypeNameLiteralCannotMakeExternalPrivateType()
+        {
+            var corelib = Assembly.GetAssembly(typeof(string));
+
+            // Find a private, non-anonymous type somewhere in mscorlib.
+            // (Interop is one)
+            Type privateType = corelib.DefinedTypes.First(
+                x => x.IsNotPublic
+                && !x.GetCustomAttributes<CompilerGeneratedAttribute>().Any());
+
+            _typeNameLiteralMaker
+                .CanMake(privateType)
+                .ShouldBe(false);
+        }
+
+        [TestMethod]
+        public void TypeNameLiteralString()
+        {
+            _typeNameLiteralMaker
+                .Literal(typeof(string), fullyQualify: true)
+                .ShouldBe("string");
+        }
+
+        [TestMethod]
+        public void TypeNameLiteralInt()
+        {
+            _typeNameLiteralMaker
+                .Literal(typeof(int), fullyQualify: true)
+                .ShouldBe("int");
+        }
+
+        [TestMethod]
+        public void TypeNameLiteralNullableInt()
+        {
+            _typeNameLiteralMaker
+                .Literal(typeof(int?), fullyQualify: true)
+                .ShouldBe("int?");
+        }
+
+        [TestMethod]
+        public void TypeNameLiteralStringArray()
+        {
+            _typeNameLiteralMaker
+                .Literal(typeof(string[]), fullyQualify: true)
+                .ShouldBe("string[]");
+        }
+
+        [TestMethod]
+        public void TypeNameLiteralStringArray2D()
+        {
+            _typeNameLiteralMaker
+                .Literal(typeof(string[,]), fullyQualify: true)
+                .ShouldBe("string[,]");
+        }
+
+        [TestMethod]
+        public void TypeNameLiteralObject()
+        {
+            _typeNameLiteralMaker
+                .Literal(typeof(object), fullyQualify: true)
+                .ShouldBe("object");
+        }
+
+        [TestMethod]
+        public void TypeNameLiteralArrayOfNested()
+        {
+            _typeNameLiteralMaker
+                .Literal(typeof(NormalClass.NestedClass[,]), fullyQualify: false)
+                .ShouldBe("NormalClass.NestedClass[,]");
         }
     }
 
