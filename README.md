@@ -5,6 +5,16 @@ Automatic generation of C# code for unit tests. Uses the excellent [Shouldly](ht
 
 https://www.nuget.org/packages/UnitTestCoder.Shouldly/
 
+## IMPORTANT NOTE (29/05/2020)
+Visual Studio 2019 16.6 has introduced a regression fault which causes log output to be truncated, without giving you the option to view the remainder. This can be resolved by setting this environment variable:
+
+```
+Variable:   _TestExplorer_TestResultMessageMaxLength_
+Value:      1000000
+```
+
+https://developercommunity.visualstudio.com/content/problem/1042000/regression-test-explorer-copy-all-does-not-give-fu.html
+
 
 ## What is it?
 
