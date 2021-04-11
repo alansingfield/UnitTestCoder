@@ -182,6 +182,16 @@ namespace UnitTestCoder.Core.Tests.Literals
         }
 
         [TestMethod]
+        public void ValueLiteralMakerDateTimeOffset()
+        {
+            _valueLiteralMaker.CanMake(typeof(DateTimeOffset)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(DateTimeOffset?)).ShouldBe(true);
+
+            _valueLiteralMaker.Literal(DateTimeOffset.Parse("2014-03-09T15:59:23.1234567+01:00"))
+                          .ShouldBe(@"DateTimeOffset.Parse(""2014-03-09T15:59:23.1234567+01:00"")");
+        }
+
+        [TestMethod]
         public void ValueLiteralMakerGuid()
         {
             _valueLiteralMaker.CanMake(typeof(Guid)).ShouldBe(true);
