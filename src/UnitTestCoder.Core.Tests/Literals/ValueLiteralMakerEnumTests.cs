@@ -72,7 +72,6 @@ namespace UnitTestCoder.Core.Tests.Literals
             run((FlagsI32Quirk)0).ShouldBe("(FlagsI32Quirk)0");
             run(FlagsI32Quirk.First).ShouldBe("FlagsI32Quirk.First");
             run(FlagsI32Quirk.Last).ShouldBe("FlagsI32Quirk.Last");
-            run(FlagsI32Quirk.BDuplicate).ShouldBe("FlagsI32Quirk.B");
             run(FlagsI32Quirk.BDuplicate | FlagsI32Quirk.First).ShouldBe("FlagsI32Quirk.First | FlagsI32Quirk.B");
             run(FlagsI32Quirk.First | FlagsI32Quirk.Last).ShouldBe("FlagsI32Quirk.First | FlagsI32Quirk.Last");
             run((FlagsI32Quirk)8).ShouldBe("(FlagsI32Quirk)8");
@@ -98,7 +97,6 @@ namespace UnitTestCoder.Core.Tests.Literals
             run((FlagsU32Quirk)0u).ShouldBe("(FlagsU32Quirk)0u");
             run(FlagsU32Quirk.First).ShouldBe("FlagsU32Quirk.First");
             run(FlagsU32Quirk.Last).ShouldBe("FlagsU32Quirk.Last");
-            run(FlagsU32Quirk.BDuplicate).ShouldBe("FlagsU32Quirk.B");
             run(FlagsU32Quirk.BDuplicate | FlagsU32Quirk.First).ShouldBe("FlagsU32Quirk.First | FlagsU32Quirk.B");
             run(FlagsU32Quirk.First | FlagsU32Quirk.Last).ShouldBe("FlagsU32Quirk.First | FlagsU32Quirk.Last");
             run((FlagsU32Quirk)8u).ShouldBe("(FlagsU32Quirk)8u");
@@ -122,7 +120,6 @@ namespace UnitTestCoder.Core.Tests.Literals
             run((FlagsI64Quirk)0L).ShouldBe("(FlagsI64Quirk)0L");
             run(FlagsI64Quirk.First).ShouldBe("FlagsI64Quirk.First");
             run(FlagsI64Quirk.Last).ShouldBe("FlagsI64Quirk.Last");
-            run(FlagsI64Quirk.BDuplicate).ShouldBe("FlagsI64Quirk.B");
             run(FlagsI64Quirk.BDuplicate | FlagsI64Quirk.First).ShouldBe("FlagsI64Quirk.First | FlagsI64Quirk.B");
             run(FlagsI64Quirk.First | FlagsI64Quirk.Last).ShouldBe("FlagsI64Quirk.First | FlagsI64Quirk.Last");
             run((FlagsI64Quirk)8L).ShouldBe("(FlagsI64Quirk)8L");
@@ -146,7 +143,6 @@ namespace UnitTestCoder.Core.Tests.Literals
             run((FlagsU64Quirk)0ul).ShouldBe("(FlagsU64Quirk)0ul");
             run(FlagsU64Quirk.First).ShouldBe("FlagsU64Quirk.First");
             run(FlagsU64Quirk.Last).ShouldBe("FlagsU64Quirk.Last");
-            run(FlagsU64Quirk.BDuplicate).ShouldBe("FlagsU64Quirk.B");
             run(FlagsU64Quirk.BDuplicate | FlagsU64Quirk.First).ShouldBe("FlagsU64Quirk.First | FlagsU64Quirk.B");
             run(FlagsU64Quirk.First | FlagsU64Quirk.Last).ShouldBe("FlagsU64Quirk.First | FlagsU64Quirk.Last");
             run((FlagsU64Quirk)8ul).ShouldBe("(FlagsU64Quirk)8ul");
@@ -170,7 +166,6 @@ namespace UnitTestCoder.Core.Tests.Literals
             run((FlagsI16Quirk)0).ShouldBe("(FlagsI16Quirk)0");
             run(FlagsI16Quirk.First).ShouldBe("FlagsI16Quirk.First");
             run(FlagsI16Quirk.Last).ShouldBe("FlagsI16Quirk.Last");
-            run(FlagsI16Quirk.BDuplicate).ShouldBe("FlagsI16Quirk.B");
             run(FlagsI16Quirk.BDuplicate | FlagsI16Quirk.First).ShouldBe("FlagsI16Quirk.First | FlagsI16Quirk.B");
             run(FlagsI16Quirk.First | FlagsI16Quirk.Last).ShouldBe("FlagsI16Quirk.First | FlagsI16Quirk.Last");
             run((FlagsI16Quirk)8).ShouldBe("(FlagsI16Quirk)8");
@@ -194,7 +189,6 @@ namespace UnitTestCoder.Core.Tests.Literals
             run((FlagsU16Quirk)0).ShouldBe("(FlagsU16Quirk)0");
             run(FlagsU16Quirk.First).ShouldBe("FlagsU16Quirk.First");
             run(FlagsU16Quirk.Last).ShouldBe("FlagsU16Quirk.Last");
-            run(FlagsU16Quirk.BDuplicate).ShouldBe("FlagsU16Quirk.B");
             run(FlagsU16Quirk.BDuplicate | FlagsU16Quirk.First).ShouldBe("FlagsU16Quirk.First | FlagsU16Quirk.B");
             run(FlagsU16Quirk.First | FlagsU16Quirk.Last).ShouldBe("FlagsU16Quirk.First | FlagsU16Quirk.Last");
             run((FlagsU16Quirk)8).ShouldBe("(FlagsU16Quirk)8");
@@ -218,7 +212,6 @@ namespace UnitTestCoder.Core.Tests.Literals
             run((FlagsS8Quirk)0).ShouldBe("(FlagsS8Quirk)0");
             run(FlagsS8Quirk.First).ShouldBe("FlagsS8Quirk.First");
             run(FlagsS8Quirk.Last).ShouldBe("FlagsS8Quirk.Last");
-            run(FlagsS8Quirk.BDuplicate).ShouldBe("FlagsS8Quirk.B");
             run(FlagsS8Quirk.BDuplicate | FlagsS8Quirk.First).ShouldBe("FlagsS8Quirk.First | FlagsS8Quirk.B");
             run(FlagsS8Quirk.First | FlagsS8Quirk.Last).ShouldBe("FlagsS8Quirk.First | FlagsS8Quirk.Last");
             run((FlagsS8Quirk)8).ShouldBe("(FlagsS8Quirk)8");
@@ -242,7 +235,6 @@ namespace UnitTestCoder.Core.Tests.Literals
             run((FlagsU8Quirk)0).ShouldBe("(FlagsU8Quirk)0");
             run(FlagsU8Quirk.First).ShouldBe("FlagsU8Quirk.First");
             run(FlagsU8Quirk.Last).ShouldBe("FlagsU8Quirk.Last");
-            run(FlagsU8Quirk.BDuplicate).ShouldBe("FlagsU8Quirk.B");
             run(FlagsU8Quirk.BDuplicate | FlagsU8Quirk.First).ShouldBe("FlagsU8Quirk.First | FlagsU8Quirk.B");
             run(FlagsU8Quirk.First | FlagsU8Quirk.Last).ShouldBe("FlagsU8Quirk.First | FlagsU8Quirk.Last");
             run((FlagsU8Quirk)8).ShouldBe("(FlagsU8Quirk)8");
@@ -269,7 +261,6 @@ namespace UnitTestCoder.Core.Tests.Literals
         C = 4,
         BC = 6,
         BDuplicate = 2,   // Reuse same number
-        NoBitField = 10,
         Last = int.MinValue,
     }
 
@@ -294,7 +285,6 @@ namespace UnitTestCoder.Core.Tests.Literals
         C = 4u,
         BC = 6u,
         BDuplicate = 2u,   // Reuse same number
-        NoBitField = 10u,
         Last = 0x8000_0000,
     }
 
@@ -319,7 +309,6 @@ namespace UnitTestCoder.Core.Tests.Literals
         C = 4L,
         BC = 6L,
         BDuplicate = 2L,   // Reuse same number
-        NoBitField = 10L,
         Last = long.MinValue,
     }
 
@@ -344,7 +333,6 @@ namespace UnitTestCoder.Core.Tests.Literals
         C = 4ul,
         BC = 6ul,
         BDuplicate = 2ul,   // Reuse same number
-        NoBitField = 10ul,
         Last = 0x8000_0000_0000_0000,
     }
 
@@ -369,7 +357,6 @@ namespace UnitTestCoder.Core.Tests.Literals
         C = 4,
         BC = 6,
         BDuplicate = 2,   // Reuse same number
-        NoBitField = 10,
         Last = short.MinValue,
     }
 
@@ -394,7 +381,6 @@ namespace UnitTestCoder.Core.Tests.Literals
         C = 4,
         BC = 6,
         BDuplicate = 2,   // Reuse same number
-        NoBitField = 10,
         Last = 0x8000,
     }
 
@@ -419,7 +405,6 @@ namespace UnitTestCoder.Core.Tests.Literals
         C = 4,
         BC = 6,
         BDuplicate = 2,   // Reuse same number
-        NoBitField = 10,
         Last = sbyte.MinValue,
     }
 
@@ -444,7 +429,6 @@ namespace UnitTestCoder.Core.Tests.Literals
         C = 4,
         BC = 6,
         BDuplicate = 2,   // Reuse same number
-        NoBitField = 10,
         Last = 0x80,
     }
 }
