@@ -31,7 +31,7 @@ namespace UnitTestCoder.Core.Tests.Literals
         {
             var arg = Nested.NestedEnum.Default;
 
-            _valueLiteralMaker.Literal(arg).ShouldBe("UnitTestCoder.Core.Tests.Literals.ValueLiteralMakerTests.Nested.NestedEnum.Default");
+            _valueLiteralMaker.Literal(arg).ShouldBe("UnitTestCoder.Core.Tests.Literals.ValueLiteralMakerEnumTests.Nested.NestedEnum.Default");
         }
 
         public partial class Nested
