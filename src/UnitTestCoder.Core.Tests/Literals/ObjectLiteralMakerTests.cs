@@ -256,7 +256,8 @@ namespace UnitTestCoder.Core.Tests.Literals
             var pq = new TypeofObject() { T = privateType };
 
             var result = makeObjectLiteral(pq);
-            result.ShouldBe("new TypeofObject() { T = typeof(/*FxResources.System.Private.CoreLib.SR*/), }");
+            result.ShouldStartWith("new TypeofObject() { T = typeof(/*");
+            result.ShouldEndWith("*/), }");
         }
 
         private string makeObjectLiteral(object arg, Func<PropertyInfo, bool> noFollowFunc = null)
