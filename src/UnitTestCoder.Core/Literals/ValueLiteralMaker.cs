@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace UnitTestCoder.Core.Literal
 {
-    public class ValueLiteralMaker : IValueLiteralMaker
+    public partial class ValueLiteralMaker : IValueLiteralMaker
     {
         public string Literal(object arg)
         {
@@ -108,13 +108,6 @@ namespace UnitTestCoder.Core.Literal
             }
         }
 
-        private static string enumLiteral(object arg, Type type)
-        {
-            // If enum is in a nested class use dot notation not plus.
-            string typeFullName = type.FullName.Replace("+", ".");
-
-            return $"{typeFullName}.{Enum.GetName(type, arg)}";
-        }
 
         private string stringLiteral(string arg)
         {
