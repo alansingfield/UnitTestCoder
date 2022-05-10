@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace UnitTestCoder.Core.Literal
 {
-    public class ValueLiteralMaker : IValueLiteralMaker
+    public partial class ValueLiteralMaker : IValueLiteralMaker
     {
         public string Literal(object arg)
         {
@@ -18,32 +18,33 @@ namespace UnitTestCoder.Core.Literal
 
             switch(arg)
             {
-                case string x:      return stringLiteral(x);
+                case string x:          return stringLiteral(x);
 
-                case int x:         return $"{x}";
-                case uint x:        return $"{x}u";
-                case long x:        return $"{x}L";
-                case ulong x:       return $"{x}ul";
+                case int x:             return $"{x}";
+                case uint x:            return $"{x}u";
+                case long x:            return $"{x}L";
+                case ulong x:           return $"{x}ul";
 
-                case short x:       return $"{x}";
-                case ushort x:      return $"{x}";
-                case byte x:        return $"{x}";
-                case sbyte x:       return $"{x}";
+                case short x:           return $"{x}";
+                case ushort x:          return $"{x}";
+                case byte x:            return $"{x}";
+                case sbyte x:           return $"{x}";
 
-                case decimal x:     return $"{x.ToString(CultureInfo.InvariantCulture)}m";
-                case double x:      return doubleLiteral(x);
-                case float x:       return floatLiteral(x);
+                case decimal x:         return $"{x.ToString(CultureInfo.InvariantCulture)}m";
+                case double x:          return doubleLiteral(x);
+                case float x:           return floatLiteral(x);
 
-                case DateTime x:    return $@"DateTime.Parse(""{x.ToString("O")}"")";
-                case TimeSpan x:    return $@"TimeSpan.Parse(""{x.ToString("g",
+                case DateTime x:        return $@"DateTime.Parse(""{x.ToString("O")}"")";
+                case DateTimeOffset x:  return $@"DateTimeOffset.Parse(""{x.ToString("O")}"")";
+                case TimeSpan x:        return $@"TimeSpan.Parse(""{x.ToString("g",
                                                 CultureInfo.InvariantCulture)}"")";
 
-                case bool x:        return x ? "true" : "false";
-                case Guid x:        return $@"Guid.Parse(""{x}"")";
-                case Enum x:        return enumLiteral(x, type);
+                case bool x:            return x ? "true" : "false";
+                case Guid x:            return $@"Guid.Parse(""{x}"")";
+                case Enum x:            return enumLiteral(x, type);
 
-                case byte[] x:      return byteArrayLiteral(x);
-                case string[] x:    return stringArrayLiteral(x);
+                case byte[] x:          return byteArrayLiteral(x);
+                case string[] x:        return stringArrayLiteral(x);
             }
 
             throw new Exception($"Unexpected data type {type}");
@@ -71,6 +72,7 @@ namespace UnitTestCoder.Core.Literal
                 || t == typeof(float)
 
                 || t == typeof(DateTime)
+                || t == typeof(DateTimeOffset)
                 || t == typeof(TimeSpan)
 
                 || t == typeof(bool)
@@ -106,13 +108,6 @@ namespace UnitTestCoder.Core.Literal
             }
         }
 
-        private static string enumLiteral(object arg, Type type)
-        {
-            // If enum is in a nested class use dot notation not plus.
-            string typeFullName = type.FullName.Replace("+", ".");
-
-            return $"{typeFullName}.{Enum.GetName(type, arg)}";
-        }
 
         private string stringLiteral(string arg)
         {
