@@ -152,7 +152,7 @@ namespace UnitTestCoder.Core.Literal
             if(array.Length == 0)
                 return "new string[0]";
 
-            var literals = array.Select(x => stringLiteral(x)).ToList();
+            var literals = array.Select(x => x != null ? stringLiteral(x) : "null").ToList();
 
             // Use line breaks if result would be over 80 chars
             int totalLen = 0;

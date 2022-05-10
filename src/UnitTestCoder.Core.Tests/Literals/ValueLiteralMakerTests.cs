@@ -299,5 +299,45 @@ namespace UnitTestCoder.Core.Tests.Literals
             StringCompareShould.IgnoreLineEndings
             );
         }
+
+        [TestMethod]
+        public void ValueLiteralMakerStringArrayNull()
+        {
+            _valueLiteralMaker.CanMake(typeof(string[])).ShouldBe(true);
+
+            string[] data = new string[] {
+                "Apple",
+                null,
+            };
+
+            _valueLiteralMaker.Literal(data).ShouldBe(@"new[] { ""Apple"", null }",
+            StringCompareShould.IgnoreLineEndings
+            );
+        }
+
+        [TestMethod]
+        public void ValueLiteralMakerEnum()
+        {
+            var arg = GCCollectionMode.Forced;
+
+            _valueLiteralMaker.Literal(arg).ShouldBe("System.GCCollectionMode.Forced");
+        }
+
+        [TestMethod]
+        public void ValueLiteralMakerEnumNested()
+        {
+            var arg = Nested.NestedEnum.Default;
+
+            _valueLiteralMaker.Literal(arg).ShouldBe("UnitTestCoder.Core.Tests.Literals.ValueLiteralMakerTests.Nested.NestedEnum.Default");
+        }
+
+        public partial class Nested
+        {
+            public enum NestedEnum
+            {
+                Default = 1
+            }
+        }
+
     }
 }
