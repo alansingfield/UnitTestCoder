@@ -291,6 +291,21 @@ namespace UnitTestCoder.Core.Tests.Literals
         }
 
         [TestMethod]
+        public void ValueLiteralMakerStringArrayNull()
+        {
+            _valueLiteralMaker.CanMake(typeof(string[])).ShouldBe(true);
+
+            string[] data = new string[] {
+                "Apple",
+                null,
+            };
+
+            _valueLiteralMaker.Literal(data).ShouldBe(@"new[] { ""Apple"", null }",
+            StringCompareShould.IgnoreLineEndings
+            );
+        }
+
+        [TestMethod]
         public void ValueLiteralMakerEnum()
         {
             var arg = GCCollectionMode.Forced;
