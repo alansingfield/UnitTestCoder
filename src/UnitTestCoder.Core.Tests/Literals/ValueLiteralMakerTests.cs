@@ -181,6 +181,44 @@ namespace UnitTestCoder.Core.Tests.Literals
             _valueLiteralMaker.Literal(DateTime.Parse("2014-03-09T15:59:23.1234567")).ShouldBe(@"DateTime.Parse(""2014-03-09T15:59:23.1234567"")");
         }
 
+        #if NET6_0_OR_GREATER
+        [TestMethod]
+        public void ValueLiteralMakerTimeOnly()
+        {
+            _valueLiteralMaker.CanMake(typeof(TimeOnly)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(TimeOnly?)).ShouldBe(true);
+
+            _valueLiteralMaker.Literal(new TimeOnly(13,45,23)).ShouldBe(@"TimeOnly.Parse(""13:45:23"")");
+        }
+
+        [TestMethod]
+        public void ValueLiteralMakerTimeOnlyLeadingZero()
+        {
+            _valueLiteralMaker.CanMake(typeof(TimeOnly)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(TimeOnly?)).ShouldBe(true);
+
+            _valueLiteralMaker.Literal(new TimeOnly(0,1,2)).ShouldBe(@"TimeOnly.Parse(""00:01:02"")");
+        }
+        
+        [TestMethod]
+        public void ValueLiteralMakerTimeOnlyFractional()
+        {
+            _valueLiteralMaker.CanMake(typeof(TimeOnly)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(TimeOnly?)).ShouldBe(true);
+
+            _valueLiteralMaker.Literal(new TimeOnly(new TimeSpan(0, 0, 58, 59, 123).Add(TimeSpan.FromTicks(4567)).Ticks)).ShouldBe(@"TimeOnly.Parse(""00:58:59.1234567"")");
+        }
+
+        [TestMethod]
+        public void ValueLiteralMakerDateOnly()
+        {
+            _valueLiteralMaker.CanMake(typeof(DateOnly)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(DateOnly?)).ShouldBe(true);
+
+            _valueLiteralMaker.Literal(DateOnly.Parse("2014-03-09")).ShouldBe(@"DateOnly.Parse(""2014-03-09"")");
+        }
+        #endif
+
         [TestMethod]
         public void ValueLiteralMakerGuid()
         {

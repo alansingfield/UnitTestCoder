@@ -101,6 +101,26 @@ namespace UnitTestCoder.Shouldly.Tests.Maker
             x.Single().ShouldBe(@"myDate.ShouldBe(DateTime.Parse(""2001-12-25T14:39:20.1230000""));");
         }
 
+#if NET6_0_OR_GREATER
+
+        [TestMethod]
+        public void ShouldlyTestMakerDateOnlyLiteral()
+        {
+            var x = _shouldlyTestMaker.GenerateShouldBes("myDateOnly", new DateOnly(2001, 12, 25));
+            x.ShouldHaveSingleItem();
+            x.Single().ShouldBe(@"myDateOnly.ShouldBe(DateOnly.Parse(""2001-12-25""));");
+        }
+
+        [TestMethod]
+        public void ShouldlyTestMakerTimeOnlyLiteral()
+        {
+            var x = _shouldlyTestMaker.GenerateShouldBes("myTimeOnly", new TimeOnly(0, 1, 2));
+            x.ShouldHaveSingleItem();
+            x.Single().ShouldBe(@"myTimeOnly.ShouldBe(TimeOnly.Parse(""00:01:02""));");
+        }
+
+#endif
+
         [TestMethod]
         public void ShouldlyTestMakerGuidLiteral()
         {

@@ -18,36 +18,54 @@ namespace UnitTestCoder.Core.Literal
 
             switch(arg)
             {
-                case string x:      return stringLiteral(x);
+                case string x: return stringLiteral(x);
 
-                case int x:         return $"{x}";
-                case uint x:        return $"{x}u";
-                case long x:        return $"{x}L";
-                case ulong x:       return $"{x}ul";
+                case int x: return $"{x}";
+                case uint x: return $"{x}u";
+                case long x: return $"{x}L";
+                case ulong x: return $"{x}ul";
 
-                case short x:       return $"{x}";
-                case ushort x:      return $"{x}";
-                case byte x:        return $"{x}";
-                case sbyte x:       return $"{x}";
+                case short x: return $"{x}";
+                case ushort x: return $"{x}";
+                case byte x: return $"{x}";
+                case sbyte x: return $"{x}";
 
-                case decimal x:     return $"{x.ToString(CultureInfo.InvariantCulture)}m";
-                case double x:      return doubleLiteral(x);
-                case float x:       return floatLiteral(x);
+                case decimal x: return $"{x.ToString(CultureInfo.InvariantCulture)}m";
+                case double x: return doubleLiteral(x);
+                case float x: return floatLiteral(x);
 
-                case DateTime x:    return $@"DateTime.Parse(""{x.ToString("O")}"")";
-                case TimeSpan x:    return $@"TimeSpan.Parse(""{x.ToString("g",
+                case DateTime x: return $@"DateTime.Parse(""{x.ToString("O")}"")";
+                case TimeSpan x:
+                    return $@"TimeSpan.Parse(""{x.ToString("g",
                                                 CultureInfo.InvariantCulture)}"")";
 
-                case bool x:        return x ? "true" : "false";
-                case Guid x:        return $@"Guid.Parse(""{x}"")";
-                case Enum x:        return enumLiteral(x, type);
+#if NET6_0_OR_GREATER
+                case DateOnly x: return $@"DateOnly.Parse(""{x.ToString("O")}"")";
+                case TimeOnly x: return timeOnlyLiteral(x);
+#endif
+                case bool x: return x ? "true" : "false";
+                case Guid x: return $@"Guid.Parse(""{x}"")";
+                case Enum x: return enumLiteral(x, type);
 
-                case byte[] x:      return byteArrayLiteral(x);
-                case string[] x:    return stringArrayLiteral(x);
+                case byte[] x: return byteArrayLiteral(x);
+                case string[] x: return stringArrayLiteral(x);
             }
 
             throw new Exception($"Unexpected data type {type}");
         }
+
+        #if NET6_0_OR_GREATER
+        private static string timeOnlyLiteral(TimeOnly x)
+        {
+            string literal = x.ToString("O");
+
+            // If 00:01:02.000000 just want 00:01:02
+            if(x.Millisecond == 0)
+                literal = literal.Substring(0, 8);
+            
+            return $@"TimeOnly.Parse(""{literal}"")";
+        }
+        #endif
 
         public bool CanMake(Type type)
         {
@@ -73,6 +91,10 @@ namespace UnitTestCoder.Core.Literal
                 || t == typeof(DateTime)
                 || t == typeof(TimeSpan)
 
+#if NET6_0_OR_GREATER
+                || t == typeof(DateOnly)
+                || t == typeof(TimeOnly)
+#endif
                 || t == typeof(bool)
                 || t == typeof(Guid)
                 || t.IsEnum
