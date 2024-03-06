@@ -220,6 +220,16 @@ namespace UnitTestCoder.Core.Tests.Literals
         #endif
 
         [TestMethod]
+        public void ValueLiteralMakerDateTimeOffset()
+        {
+            _valueLiteralMaker.CanMake(typeof(DateTimeOffset)).ShouldBe(true);
+            _valueLiteralMaker.CanMake(typeof(DateTimeOffset?)).ShouldBe(true);
+
+            _valueLiteralMaker.Literal(DateTimeOffset.Parse("2014-03-09T15:59:23.1234567+01:00"))
+                          .ShouldBe(@"DateTimeOffset.Parse(""2014-03-09T15:59:23.1234567+01:00"")");
+        }
+
+        [TestMethod]
         public void ValueLiteralMakerGuid()
         {
             _valueLiteralMaker.CanMake(typeof(Guid)).ShouldBe(true);
@@ -324,6 +334,21 @@ namespace UnitTestCoder.Core.Tests.Literals
             string[] data = new string[] { };
 
             _valueLiteralMaker.Literal(data).ShouldBe(@"new string[0]",
+            StringCompareShould.IgnoreLineEndings
+            );
+        }
+
+        [TestMethod]
+        public void ValueLiteralMakerStringArrayNull()
+        {
+            _valueLiteralMaker.CanMake(typeof(string[])).ShouldBe(true);
+
+            string[] data = new string[] {
+                "Apple",
+                null,
+            };
+
+            _valueLiteralMaker.Literal(data).ShouldBe(@"new[] { ""Apple"", null }",
             StringCompareShould.IgnoreLineEndings
             );
         }
