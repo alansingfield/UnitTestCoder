@@ -40,8 +40,8 @@ namespace UnitTestCoder.Core.Literal
                                                 CultureInfo.InvariantCulture)}"")";
 
 #if NET6_0_OR_GREATER
-                case DateOnly x: return $@"DateOnly.Parse(""{x.ToString("O")}"")";
-                case TimeOnly x: return timeOnlyLiteral(x);
+                case DateOnly x:        return $@"DateOnly.Parse(""{x.ToString("O")}"")";
+                case TimeOnly x:        return timeOnlyLiteral(x);
 #endif
                 case bool x:            return x ? "true" : "false";
                 case Guid x:            return $@"Guid.Parse(""{x}"")";
