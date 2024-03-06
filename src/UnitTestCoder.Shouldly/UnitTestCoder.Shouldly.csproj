@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net452;net6.0</TargetFrameworks>
     <RootNamespace>UnitTestCoder.Shouldly</RootNamespace>
     <Authors>Alan Singfield</Authors>
     <Company>Didsbury Software Ltd</Company>
     <Product>UnitTestCoder</Product>
-    <Copyright>(C) 2018 Didsbury Software Ltd</Copyright>
+    <Copyright>(C) 2024 Didsbury Software Ltd</Copyright>
     <PackageLicenseUrl>https://raw.githubusercontent.com/alansingfield/UnitTestCoder/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/alansingfield/UnitTestCoder</PackageProjectUrl>
     <PackageTags>Unit Test, Shouldly, C#, TDD, MIT, AAA, Test generation</PackageTags>
