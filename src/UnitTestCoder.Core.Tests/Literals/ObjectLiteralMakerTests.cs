@@ -256,6 +256,10 @@ namespace UnitTestCoder.Core.Tests.Literals
             var pq = new TypeofObject() { T = privateType };
 
             var result = makeObjectLiteral(pq);
+
+            // Result will be something like:
+            // "new TypeofObject() { T = typeof(/*FxResources.System.Private.CoreLib.SR*/), }"
+
             result.ShouldStartWith("new TypeofObject() { T = typeof(/*");
             result.ShouldEndWith("*/), }");
         }

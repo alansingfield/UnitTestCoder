@@ -39,6 +39,10 @@ namespace UnitTestCoder.Core.Literal
                 case TimeSpan x:        return $@"TimeSpan.Parse(""{x.ToString("g",
                                                 CultureInfo.InvariantCulture)}"")";
 
+#if NET6_0_OR_GREATER
+                case DateOnly x:        return $@"DateOnly.Parse(""{x.ToString("O")}"")";
+                case TimeOnly x:        return timeOnlyLiteral(x);
+#endif
                 case bool x:            return x ? "true" : "false";
                 case Guid x:            return $@"Guid.Parse(""{x}"")";
                 case Enum x:            return enumLiteral(x, type);
@@ -49,6 +53,19 @@ namespace UnitTestCoder.Core.Literal
 
             throw new Exception($"Unexpected data type {type}");
         }
+
+        #if NET6_0_OR_GREATER
+        private static string timeOnlyLiteral(TimeOnly x)
+        {
+            string literal = x.ToString("O");
+
+            // If 00:01:02.000000 just want 00:01:02
+            if(x.Millisecond == 0)
+                literal = literal.Substring(0, 8);
+            
+            return $@"TimeOnly.Parse(""{literal}"")";
+        }
+        #endif
 
         public bool CanMake(Type type)
         {
@@ -75,6 +92,10 @@ namespace UnitTestCoder.Core.Literal
                 || t == typeof(DateTimeOffset)
                 || t == typeof(TimeSpan)
 
+#if NET6_0_OR_GREATER
+                || t == typeof(DateOnly)
+                || t == typeof(TimeOnly)
+#endif
                 || t == typeof(bool)
                 || t == typeof(Guid)
                 || t.IsEnum

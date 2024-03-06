@@ -1,13 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     <Authors>Alan Singfield</Authors>
     <Company>Didsbury Software Ltd</Company>
     <PackageTags>Unit Test, C#, TDD, MIT, ViewModel, Circular Reference, WPF, Snapshot, Static initialisation</PackageTags>
     <PackageLicenseUrl>https://raw.githubusercontent.com/alansingfield/UnitTestCoder/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/alansingfield/UnitTestCoder</PackageProjectUrl>
-    <Copyright>(C) 2018 Didsbury Software Ltd</Copyright>
+    <Copyright>(C) 2024 Didsbury Software Ltd</Copyright>
     <Description>Given a populated object model at runtime, outputs the C# code to recreate the model independently.
 Able to handle circular references and list initialisations.
 Particularly useful for snapshotting WPF ViewModels for use in the WPF designer.</Description>
